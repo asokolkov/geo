@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geo", "Geo\Geo.csproj", "{111DA1DE-6807-4994-8B98-B999015E4327}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectsLoader", "ObjectsLoader\ObjectsLoader.csproj", "{8796ECD9-A98E-4530-8564-39CFA2B098C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{111DA1DE-6807-4994-8B98-B999015E4327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{111DA1DE-6807-4994-8B98-B999015E4327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{111DA1DE-6807-4994-8B98-B999015E4327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{111DA1DE-6807-4994-8B98-B999015E4327}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
