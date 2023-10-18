@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geo", "Geo\Geo.csproj", "{1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectsLoader", "ObjectsLoader\ObjectsLoader.csproj", "{8796ECD9-A98E-4530-8564-39CFA2B098C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geo.Api", "Geo.Api\Geo.Api.csproj", "{B57F2963-C9B6-426B-90C2-ABC04454B0EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8796ECD9-A98E-4530-8564-39CFA2B098C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57F2963-C9B6-426B-90C2-ABC04454B0EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57F2963-C9B6-426B-90C2-ABC04454B0EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57F2963-C9B6-426B-90C2-ABC04454B0EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57F2963-C9B6-426B-90C2-ABC04454B0EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
