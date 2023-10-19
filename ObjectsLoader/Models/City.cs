@@ -10,7 +10,5 @@ public class City
     public string OsmId { get; init; } = null!;
     public string NameRu { get; init; } = null!;
     public string Timezone { get; init; } = null!;
-    public string? IataEn { get; init; }
-    public string CountryIsoCode { get; init; } = null!;
     public string RegionIsoCode { get; init; } = null!;
 }

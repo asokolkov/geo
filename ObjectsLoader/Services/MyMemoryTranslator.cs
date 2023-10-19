@@ -6,30 +6,35 @@ namespace ObjectsLoader.Services;
 
 public class MyMemoryTranslator : IDisposable
 {
-    private const string CachePath = "../../../lib/TranslationCache.json";
+    private const string CachePath = "../../../Lib/TranslationCache.json";
     private const string Target = "ru";
     private readonly HttpClientWrapper client;
-    private readonly List<TranslationCacheJsonElement> cache;
+    private readonly Dictionary<string, string> cache;
     private readonly DetectLanguageClient identifier;
     
     public MyMemoryTranslator(HttpClientWrapper client)
     {
         this.client = client;
         var json = File.ReadAllText(CachePath);
-        cache = JsonConvert.DeserializeObject<List<TranslationCacheJsonElement>>(json)!;
+        cache = JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         identifier = new DetectLanguageClient("37ff2a1bbd15c8bac944a05bb3db817c");
     }
 
     public async Task<string?> Translate(string text)
     {
-        var translation = cache.FirstOrDefault(x => x.SourceValue == text);
+        cache.TryGetValue(text, out var translation);
         if (translation is not null)
         {
-            return translation.TargetValue;
+            return translation;
         }
-        
-        var language = (await identifier.DetectAsync(text)).FirstOrDefault(x => x.reliable)?.language;
-        if (language is null)
+
+        string language;
+        try
+        {
+            var languageResponse = await identifier.DetectAsync(text);
+            language = languageResponse.FirstOrDefault(x => x.reliable)?.language ?? "en";
+        }
+        catch (HttpRequestException e)
         {
             return null;
         }
@@ -39,13 +44,14 @@ public class MyMemoryTranslator : IDisposable
         {
             return null;
         }
-        var result = JsonConvert.DeserializeObject<MyMemoryJsonElement>(jsonString)!.ResponseData["translatedText"];
         
-        cache.Add(new TranslationCacheJsonElement
+        var result = JsonConvert.DeserializeObject<MyMemoryJsonElement>(jsonString)?.ResponseData["translatedText"];
+        if (result is null)
         {
-            SourceValue = text,
-            TargetValue = result
-        }); 
+            return null;
+        }
+
+        cache[text] = result;
         
         return result;
     }

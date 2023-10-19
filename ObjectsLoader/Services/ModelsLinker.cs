@@ -9,26 +9,56 @@ public class ModelsLinker
         foreach (var region in regions)
         {
             var countryIsoCode = region.IsoCode[..2];
-            var countryId = countries.FirstOrDefault(x => x.Iso2 == countryIsoCode)?.Id;
-            if (countryId is not null)
+            var country = countries.FirstOrDefault(x => x.Iso2 == countryIsoCode);
+            if (country is null)
             {
-                region.CountryId = (Guid)countryId;
+                continue;
             }
+            region.CountryId = country.Id;
         }
     }
 
     public void Link(List<City> cities, List<Region> regions)
     {
-        return;
+        foreach (var city in cities)
+        {
+            var region = regions.FirstOrDefault(x => x.IsoCode == city.RegionIsoCode);
+            if (region is null)
+            {
+                continue;
+            }
+            city.RegionId = region.Id;
+            city.CountryId = region.CountryId;
+        }
     }
 
-    public void Link(List<Airport> airports, List<City> countries)
+    public void Link(List<Airport> airports, List<City> cities)
     {
-        return;
+        foreach (var airport in airports)
+        {
+            var city = cities.FirstOrDefault(x => x.OsmId == airport.CityOsmId);
+            if (city is null)
+            {
+                continue;
+            }
+            airport.CityId = city.Id;
+            airport.RegionId = city.RegionId;
+            airport.CountryId = city.CountryId;
+        }
     }
 
-    public void Link(List<Railway> railways, List<City> countries)
+    public void Link(List<Railway> railways, List<City> cities)
     {
-        return;
+        foreach (var railway in railways)
+        {
+            var city = cities.FirstOrDefault(x => x.OsmId == railway.CityOsmId);
+            if (city is null)
+            {
+                continue;
+            }
+            railway.CityId = city.Id;
+            railway.RegionId = city.RegionId;
+            railway.CountryId = city.CountryId;
+        }
     }
 }

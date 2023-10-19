@@ -7,7 +7,7 @@ namespace ObjectsLoader.Extractors;
 
 public class AirportsExtractor
 {
-    private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center 1;";
+    private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center;";
     
     private readonly HttpClientWrapper client;
     private readonly MyMemoryTranslator translator;
@@ -40,6 +40,7 @@ public class AirportsExtractor
             element.Tags.TryGetValue("iata:ru", out var iataRu);
             element.Tags.TryGetValue("timezone", out var jsonTimezone);
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+            element.Tags.TryGetValue("addr:city", out var jsonCity);
             
             var nameRu = jsonNameRu ?? await translator.Translate(name);
             if (nameRu is null)
@@ -50,6 +51,37 @@ public class AirportsExtractor
             var timezone = jsonTimezone is null 
                 ? timezoneManager.GetUtcTimezone(latitude, longitude)
                 : timezoneManager.GetUtcTimezone(jsonTimezone);
+
+            var city = jsonCity;
+            if (city is null)
+            {
+                var nominatimJson = await client.GetNominatimJson(latitude, longitude);
+                if (nominatimJson is null)
+                {
+                    continue;
+                }
+                var jsonElement = JsonConvert.DeserializeObject<NominatimJsonElement>(nominatimJson);
+            
+                jsonElement!.Address.TryGetValue("country_code", out var cityName);
+                if (cityName is null)
+                {
+                    continue;
+                }
+
+                city = cityName;
+            }
+            
+            var osmJson = await client.GetOsmJson($"[out:json];nwr[name=\"{city}\"];out center 1;");
+            if (osmJson is null)
+            {
+                continue;
+            }
+            var osmJsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+            var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId;
+            if (cityOsmId is null)
+            {
+                continue;
+            }
             
             result.Add(new Airport
             {
@@ -60,7 +92,8 @@ public class AirportsExtractor
                 NameRu = nameRu,
                 IataEn = iataEn,
                 IataRu = iataRu,
-                Timezone = timezone
+                Timezone = timezone,
+                CityOsmId = cityOsmId
             });
         }
         

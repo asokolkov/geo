@@ -7,7 +7,7 @@ namespace ObjectsLoader.Extractors;
 
 public class RegionsExtractor
 {
-    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 1;";
+    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags;";
     
     private readonly HttpClientWrapper client;
     private readonly MyMemoryTranslator translator;
@@ -31,7 +31,7 @@ public class RegionsExtractor
         foreach (var element in jsonRoot!.Elements)
         {
             var osmId = element.OsmId;
-            var iso2 = element.Tags["ISO3166-2"];
+            var iso = element.Tags["ISO3166-2"];
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
@@ -46,7 +46,7 @@ public class RegionsExtractor
                 Id = Guid.NewGuid(),
                 OsmId = osmId,
                 NameRu = nameRu,
-                IsoCode = iso2
+                IsoCode = iso
             });
         }
         

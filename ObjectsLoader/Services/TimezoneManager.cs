@@ -20,13 +20,13 @@ public class TimezoneManager
         }
         
         var utcMatch = Regex.Match(unknownTimezone, @"^(UTC[+-]\d*).*");
-        if (utcMatch.Success)
+        if (!utcMatch.Success)
         {
-            var utc = utcMatch.Groups[1].Value;
-            return utc[^2] != '0' ? $"{utc[..^1]}0{utc[^1]}" : utc;
+            return unknownTimezone;
         }
-
-        return $"UNKNOWN: {unknownTimezone}";
+        
+        var utc = utcMatch.Groups[1].Value;
+        return utc[^2] != '0' ? $"{utc[..^1]}0{utc[^1]}" : utc;
     }
 
     private string IanaToUtc(string iana)

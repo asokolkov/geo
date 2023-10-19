@@ -7,7 +7,7 @@ namespace ObjectsLoader.Extractors;
 
 public class RailwaysExtractor
 {
-    private const string Query = "[out:json];nwr[building=train_station][name];out center 1;";
+    private const string Query = "[out:json];nwr[building=train_station][name];out center;";
     
     private readonly HttpClientWrapper client;
     private readonly MyMemoryTranslator translator;
@@ -38,6 +38,8 @@ public class RailwaysExtractor
             var name = element.Tags["name"];
             element.Tags.TryGetValue("timezone", out var jsonTimezone);
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+            element.Tags.TryGetValue("addr:city", out var jsonCity);
+            element.Tags.TryGetValue("uic_ref", out var uic);
             
             var nameRu = jsonNameRu ?? await translator.Translate(name);
             if (nameRu is null)
@@ -48,6 +50,39 @@ public class RailwaysExtractor
             var timezone = jsonTimezone is null 
                 ? timezoneManager.GetUtcTimezone(latitude, longitude)
                 : timezoneManager.GetUtcTimezone(jsonTimezone);
+
+            var isMain = jsonCity is not null;
+            
+            var city = jsonCity;
+            if (city is null)
+            {
+                var nominatimJson = await client.GetNominatimJson(latitude, longitude);
+                if (nominatimJson is null)
+                {
+                    continue;
+                }
+                var jsonElement = JsonConvert.DeserializeObject<NominatimJsonElement>(nominatimJson);
+            
+                jsonElement!.Address.TryGetValue("country_code", out var cityName);
+                if (cityName is null)
+                {
+                    continue;
+                }
+
+                city = cityName;
+            }
+            
+            var osmJson = await client.GetOsmJson($"[out:json];nwr[name=\"{city}\"];out center 1;");
+            if (osmJson is null)
+            {
+                continue;
+            }
+            var osmJsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+            var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId;
+            if (cityOsmId is null)
+            {
+                continue;
+            }
             
             result.Add(new Railway
             {
@@ -56,9 +91,10 @@ public class RailwaysExtractor
                 Latitude = latitude,
                 Longitude = longitude,
                 NameRu = nameRu,
-                IsMain = default,
-                Rzd = default,
-                Timezone = timezone
+                IsMain = isMain,
+                Rzd = uic ?? "",
+                Timezone = timezone,
+                CityOsmId = cityOsmId
             });
         }
         

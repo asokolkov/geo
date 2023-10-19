@@ -7,7 +7,7 @@ namespace ObjectsLoader.Extractors;
 
 public class CountriesExtractor
 {
-    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
+    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags;";
     private const string CountriesPhoneMasksPath = "../../../lib/CountriesPhoneMasks.json";
     private const string CountriesPhoneCodesPath = "../../../lib/CountriesPhoneCodes.json";
     

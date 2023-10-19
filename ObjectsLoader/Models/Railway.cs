@@ -13,5 +13,5 @@ public class Railway
     public string OsmId { get; init; } = null!;
     public string Timezone { get; init; } = null!;
     public string NameRu { get; init; } = null!;
-    public string CityIsoCode { get; init; } = null!;
+    public string CityOsmId { get; init; } = null!;
 }

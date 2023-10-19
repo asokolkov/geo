@@ -22,5 +22,3 @@ linker.Link(regions, countries);
 linker.Link(cities, regions);
 linker.Link(airports, cities);
 linker.Link(railways, cities);
-
-Console.WriteLine("Finished");
