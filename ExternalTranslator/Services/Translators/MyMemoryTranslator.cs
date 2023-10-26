@@ -15,11 +15,8 @@ internal class MyMemoryTranslator : TranslatorBase
             Id = "MyMemory",
             Url = "https://api.mymemory.translated.net/get?q={0}&langpair={1}|{2}",
             CharsMax = 5000,
-            CharsPeriod = TimeSpan.FromDays(1),
-            QueriesMax = int.MaxValue,
-            QueriesPeriod = TimeSpan.MinValue
+            CharsPeriod = TimeSpan.FromDays(1)
         };
-        Cache = CacheService.Get(Model.Id);
     }
 
     public override async Task<string?> Translate(string text, string? source, string target)
@@ -37,8 +34,7 @@ internal class MyMemoryTranslator : TranslatorBase
             return null;
         }
 
-        UpdateCache(text);
-        CacheService.Save(Model.Id);
+        CacheService.Update(Model.Id, text.Length);
         
         return translation;
     }

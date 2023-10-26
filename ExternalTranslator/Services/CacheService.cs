@@ -21,7 +21,7 @@ public class CacheService
         }
     }
 
-    public TranslatorCache Get(string translatorId)
+    public TranslatorCache GetOrCreate(string translatorId)
     {
         var translator = translators.FirstOrDefault(x => x.Id == translatorId);
         if (translator is not null)
@@ -33,14 +33,29 @@ public class CacheService
         {
             Id = translatorId,
             CurrentCharsAmount = 0,
-            CurrentQueriesAmount = 0,
             TimeCheckpoint = null
         };
         translators.Add(newTranslator);
         return newTranslator;
     }
 
-    public void Save(string translatorId)
+    public void Update(string translatorId, int charsAmount)
+    {
+        var translator = translators.First(x => x.Id == translatorId);
+        translator.CurrentCharsAmount += charsAmount;
+        translator.TimeCheckpoint ??= DateTimeOffset.Now;
+        Save();
+    }
+    
+    public void Reset(string translatorId)
+    {
+        var translator = translators.First(x => x.Id == translatorId);
+        translator.CurrentCharsAmount = 0;
+        translator.TimeCheckpoint = null;
+        Save();
+    }
+    
+    private void Save()
     {
         File.WriteAllText(CachePath, JsonSerializer.Serialize(translators));
     }
