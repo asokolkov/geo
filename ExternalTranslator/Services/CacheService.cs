@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using ExternalTranslator.Enums;
 using ExternalTranslator.Models;
 
 namespace ExternalTranslator.Services;
@@ -6,43 +7,39 @@ namespace ExternalTranslator.Services;
 public class CacheService
 {
     private const string CachePath = "./Properties/TranslationCache.json";
-    private readonly List<TranslatorCache> translators;
+    private readonly List<Translator> translators;
     
     public CacheService()
     {
+        
         if (File.Exists(CachePath))
         {
             using var stream = File.OpenRead(CachePath);
-            translators = JsonSerializer.Deserialize<List<TranslatorCache>>(stream)!;
+            translators = JsonSerializer.Deserialize<List<Translator>>(stream)!;
         }
         else
         {
-            translators = new List<TranslatorCache>();
+            translators = new List<Translator>();
         }
     }
 
-    public TranslatorCache GetOrCreate(string translatorId)
+    public Translator Get(string translatorId)
     {
-        var translator = translators.FirstOrDefault(x => x.Id == translatorId);
-        if (translator is not null)
-        {
-            return translator;
-        }
-
-        var newTranslator = new TranslatorCache
-        {
-            Id = translatorId,
-            CurrentCharsAmount = 0,
-            TimeCheckpoint = null
-        };
-        translators.Add(newTranslator);
-        return newTranslator;
+        return translators.First(x => x.Id == translatorId);
     }
 
-    public void Update(string translatorId, int charsAmount)
+    public void Update(string translatorId, string text)
     {
         var translator = translators.First(x => x.Id == translatorId);
-        translator.CurrentCharsAmount += charsAmount;
+        foreach (var restriction in translator.Restrictions)
+        {
+            restriction.CurrentAmount += restriction.Type switch
+            {
+                RestrictionType.Chars => text.Length,
+                RestrictionType.Queries => 1,
+                RestrictionType.Bytes => text.Length * sizeof(char)
+            };
+        }
         translator.TimeCheckpoint ??= DateTimeOffset.Now;
         Save();
     }
@@ -50,13 +47,17 @@ public class CacheService
     public void Reset(string translatorId)
     {
         var translator = translators.First(x => x.Id == translatorId);
-        translator.CurrentCharsAmount = 0;
+        foreach (var restriction in translator.Restrictions)
+        {
+            restriction.CurrentAmount = 0;
+        }
         translator.TimeCheckpoint = null;
         Save();
     }
     
     private void Save()
     {
-        File.WriteAllText(CachePath, JsonSerializer.Serialize(translators));
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(CachePath, JsonSerializer.Serialize(translators, options));
     }
 }

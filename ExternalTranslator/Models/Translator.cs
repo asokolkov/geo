@@ -1,9 +1,11 @@
-﻿namespace ExternalTranslator.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace ExternalTranslator.Models;
 
 public class Translator
 {
-    public string Id { get; init; } = null!;
-    public string Url { get; init; } = null!;
-    public int CharsMax { get; init; }
-    public TimeSpan CharsPeriod { get; init; }
+    [JsonPropertyName("id")] public string Id { get; init; } = null!;
+    [JsonPropertyName("url")] public string Url { get; init; } = null!;
+    [JsonPropertyName("timeCheckpoint")] public DateTimeOffset? TimeCheckpoint { get; set; }
+    [JsonPropertyName("restrictions")] public List<Restriction> Restrictions { get; init; } = new();
 }

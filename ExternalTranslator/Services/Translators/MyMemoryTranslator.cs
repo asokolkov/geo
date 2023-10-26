@@ -10,13 +10,7 @@ internal class MyMemoryTranslator : TranslatorBase
     public MyMemoryTranslator(HttpClient client, CacheService cacheService, string detectLanguageApiKey) : base(client, cacheService)
     {
         languageIdentifier = new DetectLanguageClient(detectLanguageApiKey);
-        Model = new Translator
-        {
-            Id = "MyMemory",
-            Url = "https://api.mymemory.translated.net/get?q={0}&langpair={1}|{2}",
-            CharsMax = 5000,
-            CharsPeriod = TimeSpan.FromDays(1)
-        };
+        Model = CacheService.Get("MyMemory");
     }
 
     public override async Task<string?> Translate(string text, string? source, string target)
@@ -33,9 +27,7 @@ internal class MyMemoryTranslator : TranslatorBase
         {
             return null;
         }
-
-        CacheService.Update(Model.Id, text.Length);
-        
+        CacheService.Update(Model.Id, text);
         return translation;
     }
     

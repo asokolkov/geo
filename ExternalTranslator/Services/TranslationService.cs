@@ -6,12 +6,13 @@ public class TranslationService
 {
     private readonly List<TranslatorBase> translators;
 
-    public TranslationService(string detectLanguageApiKey)
+    public TranslationService(string yandexApiKey, string detectLanguageApiKey)
     {
         var client = new HttpClient();
         var cache = new CacheService();
         translators = new List<TranslatorBase>
         {
+            // new YandexTranslator(client, cache, yandexApiKey),
             new MyMemoryTranslator(client, cache, detectLanguageApiKey)
         };
     }

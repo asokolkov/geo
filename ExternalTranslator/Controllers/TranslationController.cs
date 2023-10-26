@@ -13,7 +13,8 @@ public class TranslationController : ControllerBase
     public TranslationController(IConfiguration configuration)
     {
         var detectLanguageApiKey = configuration["DetectLanguageClient:ApiKey"];
-        translationService = new TranslationService(detectLanguageApiKey);
+        var yandexApiKey = configuration["Yandex:ApiKey"];
+        translationService = new TranslationService(yandexApiKey, detectLanguageApiKey);
     }
 
     [HttpGet]

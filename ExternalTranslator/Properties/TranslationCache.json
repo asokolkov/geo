@@ -1,1 +1,15 @@
-[{"id":"MyMemory","currentCharsAmount":5,"currentQueriesAmount":1,"timeCheckpoint":"2023-10-25T14:16:07.2941467+05:00"}]
+[
+  {
+    "id": "MyMemory",
+    "url": "https://api.mymemory.translated.net/get?q={0}\u0026langpair={1}|{2}",
+    "timeCheckpoint": "2023-10-27T00:57:20.3185024+05:00",
+    "restrictions": [
+      {
+        "type": 0,
+        "maxAmount": 5000,
+        "period": "01:00:00",
+        "currentAmount": 5
+      }
+    ]
+  },
+]

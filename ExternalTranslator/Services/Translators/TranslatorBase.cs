@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using ExternalTranslator.Enums;
 using ExternalTranslator.Models;
 
 namespace ExternalTranslator.Services.Translators;
@@ -18,14 +19,19 @@ internal abstract class TranslatorBase
 
     public bool CanTranslate(string text)
     {
-        var cache = CacheService.GetOrCreate(Model.Id);
-        return cache.CurrentCharsAmount + text.Length < Model.CharsMax;
+        return Model.Restrictions.Aggregate(true, (result, restriction) => restriction.Type switch
+        {
+            RestrictionType.Chars => result && !restriction.LimitReached(text.Length),
+            RestrictionType.Queries => result && !restriction.LimitReached(1),
+            RestrictionType.Bytes => result && !restriction.LimitReached(text.Length * sizeof(char)),
+            _ => result
+        });
     }
     
     public void TryUpdatePeriods()
     {
-        var cache = CacheService.GetOrCreate(Model.Id);
-        if (DateTimeOffset.Now - cache.TimeCheckpoint > Model.CharsPeriod)
+        var restriction = Model.Restrictions.FirstOrDefault(x => DateTimeOffset.Now - Model.TimeCheckpoint > x.Period);
+        if (restriction is not null)
         {
             CacheService.Reset(Model.Id);
         }
