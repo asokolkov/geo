@@ -9,67 +9,34 @@ using Microsoft.Extensions.Options;
 
 namespace ExternalTranslator.Services.Translators;
 
-internal class YandexClient : IYandexClient
+internal class YandexClient : TranslatorClientBase, IYandexClient
 {
     private readonly YandexClientOptions options;
-    private readonly IDistributedCache cache;
-    private readonly HttpClient httpClient;
-
-    private readonly Translator model = new()
-    {
-        Id = "Yandex",
-        Restrictions = new List<Restriction>
-        {
-            new()
-            {
-                Type = RestrictionType.Chars,
-                MaxAmount = 1000000,
-                Period = TimeSpan.FromHours(1)
-            },
-            new()
-            {
-                Type = RestrictionType.Queries,
-                MaxAmount = 20,
-                Period = TimeSpan.FromSeconds(1)
-            }
-        }
-    };
     
-    public YandexClient(IOptions<YandexClientOptions> options, IDistributedCache cache)
+    public YandexClient(IOptions<YandexClientOptions> options, IDistributedCache cache) : base(cache)
     {
-        this.cache = cache;
         this.options = options.Value;
-        httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.options.ApiKey);
-        ReadCache();
-    }
-
-    public async Task TryResetModel()
-    {
-        var timePassed = model.Restrictions.All(x => DateTimeOffset.Now - model.TimeCheckpoint > x.Period);
-        if (!timePassed)
+        HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.options.ApiKey);
+        Model = new Translator
         {
-            return;
-        }
-        foreach (var restriction in model.Restrictions)
-        {
-            restriction.CurrentAmount = 0;
-        }
-        model.TimeCheckpoint = null;
-        await SaveCache();
-    }
-
-    public bool CanTranslate(string text)
-    {
-        foreach (var restriction in model.Restrictions)
-        {
-            if (restriction.Type == RestrictionType.Chars && restriction.LimitReached(text.Length) ||
-                restriction.Type == RestrictionType.Queries && restriction.LimitReached(1))
+            Id = "Yandex",
+            Restrictions = new List<Restriction>
             {
-                return false;
+                new()
+                {
+                    Type = RestrictionType.Chars,
+                    MaxAmount = 1000000,
+                    Period = TimeSpan.FromHours(1)
+                },
+                new()
+                {
+                    Type = RestrictionType.Queries,
+                    MaxAmount = 20,
+                    Period = TimeSpan.FromSeconds(1)
+                }
             }
-        }
-        return true;
+        };
+        ReadCache();
     }
 
     public async Task<string?> Translate(string text, string? source, string target)
@@ -97,51 +64,10 @@ internal class YandexClient : IYandexClient
         return translation;
     }
 
-    private void ReadCache()
-    {
-        var modelJson = cache.Get(model.Id);
-        model.TimeCheckpoint = modelJson.TimeCheckpoint;
-        foreach (var restriction in modelJson.Restrictions)
-        {
-            model.Restrictions.First(x => x.Type == restriction.Type).CurrentAmount = restriction.CurrentAmount;
-        }
-    }
-    
-    private void UpdateModel(string text)
-    {
-        model.TimeCheckpoint ??= DateTimeOffset.Now;
-        foreach (var restriction in model.Restrictions)
-        {
-            if (restriction.Type == RestrictionType.Chars)
-            {
-                restriction.CurrentAmount += text.Length;
-            }
-            else if (restriction.Type == RestrictionType.Queries)
-            {
-                restriction.CurrentAmount += 1;
-            }
-        }
-    }
-    
-    private async Task SaveCache()
-    {
-        var restrictions = model.Restrictions
-            .Select(restriction => new RestrictionJson { Type = restriction.Type, CurrentAmount = restriction.CurrentAmount })
-            .ToList();
-        var modelJson = new TranslatorJson
-        {
-            Id = model.Id,
-            TimeCheckpoint = model.TimeCheckpoint,
-            Restrictions = restrictions
-        };
-        await cache.SetAsync(modelJson);
-    }
-
     private async Task<YandexResponseJson?> Fetch(YandexRequestJson json)
     {
-        var t = JsonSerializer.Serialize(json);
         var data = new StringContent(JsonSerializer.Serialize(json));
-        var response = await httpClient.PostAsync(options.ApiUrl, data);
+        var response = await HttpClient.PostAsync(options.ApiUrl, data);
         if (response.StatusCode != HttpStatusCode.OK)
         {
             return default;
