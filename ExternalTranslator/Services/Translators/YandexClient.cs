@@ -1,6 +1,6 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
-using DetectLanguage;
 using ExternalTranslator.Enums;
 using ExternalTranslator.JsonModels;
 using ExternalTranslator.Models;
@@ -9,33 +9,38 @@ using Microsoft.Extensions.Options;
 
 namespace ExternalTranslator.Services.Translators;
 
-internal class MyMemoryClient : IMyMemoryClient
+internal class YandexClient : IYandexClient
 {
-    private readonly MyMemoryClientOptions options;
+    private readonly YandexClientOptions options;
     private readonly IDistributedCache cache;
     private readonly HttpClient httpClient;
-    private readonly DetectLanguageClient languageIdentifier;
 
     private readonly Translator model = new()
     {
-        Id = "MyMemory",
+        Id = "Yandex",
         Restrictions = new List<Restriction>
         {
             new()
             {
                 Type = RestrictionType.Chars,
-                MaxAmount = 5000,
-                Period = TimeSpan.FromDays(1)
+                MaxAmount = 1000000,
+                Period = TimeSpan.FromHours(1)
+            },
+            new()
+            {
+                Type = RestrictionType.Queries,
+                MaxAmount = 20,
+                Period = TimeSpan.FromSeconds(1)
             }
         }
     };
     
-    public MyMemoryClient(IOptions<MyMemoryClientOptions> options, IDistributedCache cache)
+    public YandexClient(IOptions<YandexClientOptions> options, IDistributedCache cache)
     {
         this.cache = cache;
         this.options = options.Value;
         httpClient = new HttpClient();
-        languageIdentifier = new DetectLanguageClient(this.options.DetectLanguageApiKey);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.options.ApiKey);
         ReadCache();
     }
 
@@ -69,14 +74,20 @@ internal class MyMemoryClient : IMyMemoryClient
 
     public async Task<string?> Translate(string text, string? source, string target)
     {
-        var validSource = source ?? await IdentifySource(text);
         if (source == target)
         {
             return null;
         }
-        var url = string.Format(options.ApiUrl, text, validSource, target);
-        var response = await Fetch(url);
-        var translation = response?.Response.TranslatedText;
+
+        var data = new YandexRequestJson
+        {
+            Target = target,
+            Source = source,
+            Text = text,
+            FolderId = options.ApiFolderId
+        };
+        var response = await Fetch(data);
+        var translation = response?.Translations.FirstOrDefault()?["text"];
         if (translation is null)
         {
             return null;
@@ -126,20 +137,16 @@ internal class MyMemoryClient : IMyMemoryClient
         await cache.SetAsync(modelJson);
     }
 
-    private async Task<MyMemoryJson?> Fetch(string url)
+    private async Task<YandexResponseJson?> Fetch(YandexRequestJson json)
     {
-        var response = await httpClient.GetAsync(url);
+        var t = JsonSerializer.Serialize(json);
+        var data = new StringContent(JsonSerializer.Serialize(json));
+        var response = await httpClient.PostAsync(options.ApiUrl, data);
         if (response.StatusCode != HttpStatusCode.OK)
         {
             return default;
         }
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<MyMemoryJson>(content);
-    }
-    
-    private async Task<string> IdentifySource(string text)
-    {
-        var languageResponse = await languageIdentifier.DetectAsync(text);
-        return languageResponse.FirstOrDefault(x => x.reliable)?.language ?? "en";
+        return JsonSerializer.Deserialize<YandexResponseJson>(content);
     }
 }

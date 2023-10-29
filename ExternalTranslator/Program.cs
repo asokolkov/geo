@@ -1,8 +1,21 @@
+using ExternalTranslator.Options;
+using ExternalTranslator.Services;
+using ExternalTranslator.Services.Translators;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<MyMemoryClientOptions>(builder.Configuration.GetSection("MyMemoryClientOptions"));
+builder.Services.Configure<YandexClientOptions>(builder.Configuration.GetSection("YandexClientOptions"));
+
+builder.Services.AddScoped<IDistributedCache, InMemoryDistributedCache>();
+builder.Services.AddScoped<ITranslationService, TranslationService>();
+builder.Services.AddScoped<IMyMemoryClient, MyMemoryClient>();
+builder.Services.AddScoped<IYandexClient, YandexClient>();
 
 var app = builder.Build();
 

@@ -2,18 +2,15 @@
 
 namespace ExternalTranslator.Services;
 
-public class TranslationService
+public class TranslationService : ITranslationService
 {
-    private readonly List<TranslatorBase> translators;
-
-    public TranslationService(string yandexApiKey, string detectLanguageApiKey)
+    private readonly List<ITranslatorClient> translators;
+    
+    public TranslationService(IMyMemoryClient myMemoryClient, IYandexClient yandexClient)
     {
-        var client = new HttpClient();
-        var cache = new CacheService();
-        translators = new List<TranslatorBase>
+        translators = new List<ITranslatorClient>
         {
-            // new YandexTranslator(client, cache, yandexApiKey),
-            new MyMemoryTranslator(client, cache, detectLanguageApiKey)
+            myMemoryClient, yandexClient
         };
     }
     
@@ -21,7 +18,7 @@ public class TranslationService
     {
         foreach (var translator in translators)
         {
-            translator.TryUpdatePeriods();
+            await translator.TryResetModel();
             if (translator.CanTranslate(text))
             {
                 return await translator.Translate(text, source, target);

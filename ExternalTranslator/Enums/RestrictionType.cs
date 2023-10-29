@@ -3,6 +3,5 @@
 public enum RestrictionType
 {
     Chars = 0, 
-    Queries = 1, 
-    Bytes = 2
+    Queries = 1
 }

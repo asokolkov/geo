@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ExternalTranslator.Models;
+namespace ExternalTranslator.JsonModels;
 
-public class MyMemoryResponseDataJson
+public class MyMemoryResponseJson
 {
     [JsonPropertyName("translatedText")] public string TranslatedText { get; init; } = null!;
 }

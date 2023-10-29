@@ -8,13 +8,11 @@ namespace ExternalTranslator.Controllers;
 [Route("/translate")]
 public class TranslationController : ControllerBase
 {
-    private readonly TranslationService translationService;
-    
-    public TranslationController(IConfiguration configuration)
+    private readonly ITranslationService translationService;
+
+    public TranslationController(ITranslationService translationService)
     {
-        var detectLanguageApiKey = configuration["DetectLanguageClient:ApiKey"];
-        var yandexApiKey = configuration["Yandex:ApiKey"];
-        translationService = new TranslationService(yandexApiKey, detectLanguageApiKey);
+        this.translationService = translationService;
     }
 
     [HttpGet]
