@@ -1,6 +1,6 @@
-﻿using ExternalTranslator.Services.Translators;
+﻿using ExternalTranslator.Translators;
 
-namespace ExternalTranslator.Services;
+namespace ExternalTranslator.Services.Impl;
 
 public class TranslationService : ITranslationService
 {
@@ -18,10 +18,13 @@ public class TranslationService : ITranslationService
     {
         foreach (var translator in translators)
         {
-            await translator.TryResetModel();
-            if (translator.CanTranslate(text))
+            await translator.TryResetRestrictions();
+            var translation = translator.CanTranslate(text) 
+                ? await translator.Translate(text, source, target) 
+                : null;
+            if (translation is not null)
             {
-                return await translator.Translate(text, source, target);
+                return translation;
             }
         }
         return null;

@@ -1,8 +1,8 @@
-﻿namespace ExternalTranslator.Services.Translators;
+﻿namespace ExternalTranslator.Translators;
 
 public interface ITranslatorClient
 {
-    public Task TryResetModel();
+    public Task TryResetRestrictions();
     public bool CanTranslate(string text);
     public Task<string?> Translate(string text, string? source, string target);
 }

@@ -2,7 +2,7 @@
 using ExternalTranslator.JsonModels;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace ExternalTranslator.Services;
+namespace ExternalTranslator.Services.Impl;
 
 public class InMemoryDistributedCache : IDistributedCache
 {

@@ -1,6 +1,8 @@
 using ExternalTranslator.Options;
 using ExternalTranslator.Services;
-using ExternalTranslator.Services.Translators;
+using ExternalTranslator.Services.Impl;
+using ExternalTranslator.Translators;
+using ExternalTranslator.Translators.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 

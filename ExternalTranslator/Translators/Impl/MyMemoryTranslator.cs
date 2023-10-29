@@ -5,9 +5,10 @@ using ExternalTranslator.Enums;
 using ExternalTranslator.JsonModels;
 using ExternalTranslator.Models;
 using ExternalTranslator.Options;
+using ExternalTranslator.Services;
 using Microsoft.Extensions.Options;
 
-namespace ExternalTranslator.Services.Translators;
+namespace ExternalTranslator.Translators.Impl;
 
 internal class MyMemoryClient : TranslatorClientBase, IMyMemoryClient
 {

@@ -1,8 +1,9 @@
 ﻿using ExternalTranslator.Enums;
 using ExternalTranslator.JsonModels;
 using ExternalTranslator.Models;
+using ExternalTranslator.Services;
 
-namespace ExternalTranslator.Services.Translators;
+namespace ExternalTranslator.Translators.Impl;
 
 public class TranslatorClientBase
 {
@@ -20,8 +21,9 @@ public class TranslatorClientBase
     {
         foreach (var restriction in Model.Restrictions)
         {
-            if (restriction.Type == RestrictionType.Chars && restriction.LimitReached(text.Length) ||
-                restriction.Type == RestrictionType.Queries && restriction.LimitReached(1))
+            var charsLimitReached = restriction.Type == RestrictionType.Chars && restriction.CurrentAmount + text.Length >= restriction.MaxAmount;
+            var queriesLimitReached = restriction.Type == RestrictionType.Queries && restriction.CurrentAmount + 1 >= restriction.MaxAmount;
+            if (charsLimitReached || queriesLimitReached)
             {
                 return false;
             }
@@ -29,34 +31,33 @@ public class TranslatorClientBase
         return true;
     }
     
-    public async Task TryResetModel()
+    public async Task TryResetRestrictions()
     {
-        // TODO: это неправильно, нужно обновлять каждое ограничение отдельно
-        var timePassed = Model.Restrictions.All(x => DateTimeOffset.Now - Model.TimeCheckpoint > x.Period);
-        if (!timePassed)
-        {
-            return;
-        }
         foreach (var restriction in Model.Restrictions)
         {
-            restriction.CurrentAmount = 0;
+            var timePassed = DateTimeOffset.Now - restriction.TimeCheckpoint > restriction.Period;
+            if (timePassed)
+            {
+                restriction.CurrentAmount = 0;
+                restriction.TimeCheckpoint = null;
+            }
         }
-        Model.TimeCheckpoint = null;
         await SaveCache();
     }
     
     protected void UpdateModel(string text)
     {
-        Model.TimeCheckpoint ??= DateTimeOffset.Now;
         foreach (var restriction in Model.Restrictions)
         {
             if (restriction.Type == RestrictionType.Chars)
             {
                 restriction.CurrentAmount += text.Length;
+                restriction.TimeCheckpoint ??= DateTimeOffset.Now;
             }
             else if (restriction.Type == RestrictionType.Queries)
             {
                 restriction.CurrentAmount += 1;
+                restriction.TimeCheckpoint ??= DateTimeOffset.Now;
             }
         }
     }
@@ -64,22 +65,27 @@ public class TranslatorClientBase
     protected void ReadCache()
     {
         var modelJson = cache.Get(Model.Id);
-        Model.TimeCheckpoint = modelJson.TimeCheckpoint;
         foreach (var restriction in modelJson.Restrictions)
         {
-            Model.Restrictions.First(x => x.Type == restriction.Type).CurrentAmount = restriction.CurrentAmount;
+            var modelRestriction = Model.Restrictions.First(x => x.Type == restriction.Type);
+            modelRestriction.CurrentAmount = restriction.CurrentAmount;
+            modelRestriction.TimeCheckpoint = restriction.TimeCheckpoint;
         }
     }
     
     protected async Task SaveCache()
     {
         var restrictions = Model.Restrictions
-            .Select(restriction => new RestrictionJson { Type = restriction.Type, CurrentAmount = restriction.CurrentAmount })
+            .Select(restriction => new RestrictionJson
+            {
+                Type = restriction.Type, 
+                CurrentAmount = restriction.CurrentAmount,
+                TimeCheckpoint = restriction.TimeCheckpoint
+            })
             .ToList();
         var modelJson = new TranslatorJson
         {
             Id = Model.Id,
-            TimeCheckpoint = Model.TimeCheckpoint,
             Restrictions = restrictions
         };
         await cache.SetAsync(modelJson);

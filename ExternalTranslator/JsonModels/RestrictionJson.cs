@@ -5,6 +5,7 @@ namespace ExternalTranslator.JsonModels;
 
 public class RestrictionJson
 {
-    [JsonPropertyName("type")] public RestrictionType Type { get; set; }
-    [JsonPropertyName("currentAmount")] public int CurrentAmount { get; set; }
+    [JsonPropertyName("type")] public RestrictionType Type { get; init; }
+    [JsonPropertyName("timeCheckpoint")] public DateTimeOffset? TimeCheckpoint { get; init; }
+    [JsonPropertyName("currentAmount")] public int CurrentAmount { get; init; }
 }
