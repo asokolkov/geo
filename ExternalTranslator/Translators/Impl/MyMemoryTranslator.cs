@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace ExternalTranslator.Translators.Impl;
 
-internal class MyMemoryClient : TranslatorClientBase, IMyMemoryClient
+internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
 {
     private readonly MyMemoryClientOptions options;
     private readonly DetectLanguageClient languageIdentifier;

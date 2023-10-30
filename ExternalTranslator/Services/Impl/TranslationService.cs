@@ -6,12 +6,9 @@ public class TranslationService : ITranslationService
 {
     private readonly List<ITranslatorClient> translators;
     
-    public TranslationService(IMyMemoryClient myMemoryClient, IYandexClient yandexClient)
+    public TranslationService(IEnumerable<ITranslatorClient> translatorsClients)
     {
-        translators = new List<ITranslatorClient>
-        {
-            myMemoryClient, yandexClient
-        };
+        translators = translatorsClients.ToList();
     }
     
     public async Task<string?> Translate(string text, string? source, string target)

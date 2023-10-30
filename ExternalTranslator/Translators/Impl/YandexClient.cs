@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace ExternalTranslator.Translators.Impl;
 
-internal class YandexClient : TranslatorClientBase, IYandexClient
+internal class YandexClient : TranslatorClientBase, ITranslatorClient
 {
     private readonly YandexClientOptions options;
     
