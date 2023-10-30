@@ -13,6 +13,10 @@ public class TranslationService : ITranslationService
     
     public async Task<string?> Translate(string text, string? source, string target)
     {
+        if (source == target)
+        {
+            return text;
+        }
         foreach (var translator in translators)
         {
             await translator.TryResetRestrictions();

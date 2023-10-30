@@ -34,6 +34,12 @@ internal class YandexClient : TranslatorClientBase, ITranslatorClient
                     Type = RestrictionType.Queries,
                     MaxAmount = 20,
                     Period = TimeSpan.FromSeconds(1)
+                },
+                new() // для тестирования
+                {
+                    Type = RestrictionType.Queries,
+                    MaxAmount = 5000,
+                    Period = TimeSpan.FromDays(1)
                 }
             }
         };

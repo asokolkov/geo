@@ -35,8 +35,7 @@ public class TranslatorClientBase
     {
         foreach (var restriction in Model.Restrictions)
         {
-            var timePassed = DateTimeOffset.Now - restriction.TimeCheckpoint > restriction.Period;
-            if (timePassed)
+            if (DateTimeOffset.Now - restriction.TimeCheckpoint > restriction.Period)
             {
                 restriction.CurrentAmount = 0;
                 restriction.TimeCheckpoint = null;
