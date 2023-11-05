@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
@@ -7,22 +8,24 @@ namespace ObjectsLoader.Extractors;
 
 public class RailwaysExtractor
 {
-    private const string Query = "[out:json];nwr[building=train_station][name];out center;";
+    private const string Query = "[out:json];nwr[building=train_station][name];out center 1;";
     
-    private readonly HttpClientWrapper client;
+    private readonly OsmClient osmClient;
+    private readonly NominatimClient nominatimClient;
     private readonly MyMemoryTranslator translator;
     private readonly TimezoneManager timezoneManager;
 
-    public RailwaysExtractor(HttpClientWrapper client, MyMemoryTranslator translator, TimezoneManager timezoneManager)
+    public RailwaysExtractor(OsmClient osmClient, NominatimClient nominatimClient, MyMemoryTranslator translator, TimezoneManager timezoneManager)
     {
-        this.client = client;
+        this.osmClient = osmClient;
+        this.nominatimClient = nominatimClient;
         this.translator = translator;
         this.timezoneManager = timezoneManager;
     }
     
     public async Task<List<Railway>> Extract()
     {
-        var jsonString = await client.GetOsmJson(Query);
+        var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
             return new List<Railway>();
@@ -56,7 +59,7 @@ public class RailwaysExtractor
             var city = jsonCity;
             if (city is null)
             {
-                var nominatimJson = await client.GetNominatimJson(latitude, longitude);
+                var nominatimJson = await nominatimClient.Fetch(latitude, longitude);
                 if (nominatimJson is null)
                 {
                     continue;
@@ -72,7 +75,7 @@ public class RailwaysExtractor
                 city = cityName;
             }
             
-            var osmJson = await client.GetOsmJson($"[out:json];nwr[name=\"{city}\"];out center 1;");
+            var osmJson = await osmClient.Fetch($"[out:json];nwr[name=\"{city}\"];out center 1;");
             if (osmJson is null)
             {
                 continue;

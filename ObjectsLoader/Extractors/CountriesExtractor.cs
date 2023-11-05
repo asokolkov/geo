@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
@@ -7,22 +8,22 @@ namespace ObjectsLoader.Extractors;
 
 public class CountriesExtractor
 {
-    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags;";
+    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
     private const string CountriesPhoneMasksPath = "../../../lib/CountriesPhoneMasks.json";
     private const string CountriesPhoneCodesPath = "../../../lib/CountriesPhoneCodes.json";
     
-    private readonly HttpClientWrapper client;
+    private readonly OsmClient osmClient;
     private readonly MyMemoryTranslator translator;
     
-    public CountriesExtractor(HttpClientWrapper client, MyMemoryTranslator translator)
+    public CountriesExtractor(OsmClient osmClient, MyMemoryTranslator translator)
     {
-        this.client = client;
+        this.osmClient = osmClient;
         this.translator = translator;
     }
     
     public async Task<List<Country>> Extract()
     {
-        var jsonString = await client.GetOsmJson(Query);
+        var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
             return new List<Country>();

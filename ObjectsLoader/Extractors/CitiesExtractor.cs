@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
@@ -7,22 +8,24 @@ namespace ObjectsLoader.Extractors;
 
 public class CitiesExtractor
 {
-    private const string Query = "[out:json];nwr[place=city][name];out;";
+    private const string Query = "[out:json];nwr[place=city][name];out 1;";
     
-    private readonly HttpClientWrapper client;
+    private readonly OsmClient osmClient;
+    private readonly NominatimClient nominatimClient;
     private readonly MyMemoryTranslator translator;
     private readonly TimezoneManager timezoneManager;
 
-    public CitiesExtractor(HttpClientWrapper client, MyMemoryTranslator translator, TimezoneManager timezoneManager)
+    public CitiesExtractor(OsmClient osmClient, NominatimClient nominatimClient, MyMemoryTranslator translator, TimezoneManager timezoneManager)
     {
-        this.client = client;
+        this.osmClient = osmClient;
+        this.nominatimClient = nominatimClient;
         this.translator = translator;
         this.timezoneManager = timezoneManager;
     }
     
     public async Task<List<City>> Extract()
     {
-        var jsonString = await client.GetOsmJson(Query);
+        var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
             return new List<City>();
@@ -53,7 +56,7 @@ public class CitiesExtractor
             var regionIso = jsonRegionIso;
             if (regionIso is null)
             {
-                var nominatimJson = await client.GetNominatimJson(latitude, longitude);
+                var nominatimJson = await nominatimClient.Fetch(latitude, longitude);
                 if (nominatimJson is null)
                 {
                     continue;

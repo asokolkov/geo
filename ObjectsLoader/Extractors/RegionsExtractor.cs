@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
@@ -7,20 +8,20 @@ namespace ObjectsLoader.Extractors;
 
 public class RegionsExtractor
 {
-    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags;";
+    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 1;";
     
-    private readonly HttpClientWrapper client;
+    private readonly OsmClient osmClient;
     private readonly MyMemoryTranslator translator;
     
-    public RegionsExtractor(HttpClientWrapper client, MyMemoryTranslator translator)
+    public RegionsExtractor(OsmClient osmClient, MyMemoryTranslator translator)
     {
-        this.client = client;
+        this.osmClient = osmClient;
         this.translator = translator;
     }
     
     public async Task<List<Region>> Extract()
     {
-        var jsonString = await client.GetOsmJson(Query);
+        var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
             return new List<Region>();
