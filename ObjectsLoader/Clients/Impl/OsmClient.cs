@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace ObjectsLoader.Clients;
+namespace ObjectsLoader.Clients.Impl;
 
-public class OsmClient
+public class OsmClient : IOsmClient
 {
     private const string Url = "https://overpass-api.de/api/interpreter?data={0}";
     private readonly HttpClient client = new();

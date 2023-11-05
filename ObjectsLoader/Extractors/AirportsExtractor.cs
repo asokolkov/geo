@@ -10,12 +10,12 @@ public class AirportsExtractor
 {
     private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center 1;";
     
-    private readonly OsmClient osmClient;
-    private readonly NominatimClient nominatimClient;
-    private readonly TranslatorClient translatorClient;
+    private readonly IOsmClient osmClient;
+    private readonly INominatimClient nominatimClient;
+    private readonly ITranslatorClient translatorClient;
     private readonly TimezoneManager timezoneManager;
 
-    public AirportsExtractor(OsmClient osmClient, NominatimClient nominatimClient, TranslatorClient translatorClient, TimezoneManager timezoneManager)
+    public AirportsExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, TimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
@@ -45,7 +45,7 @@ public class AirportsExtractor
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             element.Tags.TryGetValue("addr:city", out var jsonCity);
             
-            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
             if (nameRu is null)
             {
                 continue;

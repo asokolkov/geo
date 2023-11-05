@@ -10,10 +10,10 @@ public class CountriesExtractor
 {
     private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
     
-    private readonly OsmClient osmClient;
-    private readonly TranslatorClient translatorClient;
+    private readonly IOsmClient osmClient;
+    private readonly ITranslatorClient translatorClient;
     
-    public CountriesExtractor(OsmClient osmClient, TranslatorClient translatorClient)
+    public CountriesExtractor(IOsmClient osmClient, ITranslatorClient translatorClient)
     {
         this.osmClient = osmClient;
         this.translatorClient = translatorClient;
@@ -37,7 +37,7 @@ public class CountriesExtractor
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
-            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
             if (nameRu is null)
             {
                 continue;

@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using System.Net;
 
-namespace ObjectsLoader.Clients;
+namespace ObjectsLoader.Clients.Impl;
 
-public class NominatimClient
+public class NominatimClient : INominatimClient
 {
     private const string Url = "https://nominatim.openstreetmap.org/reverse?format=json&lat={0}&lon={1}";
     private readonly HttpClient client = new();
