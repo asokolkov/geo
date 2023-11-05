@@ -1,33 +1,33 @@
-﻿namespace Geo.Api.V1.Countries.Controllers;
-
-using Application.Countries.Commands.CreateCountryCommand;
-using Application.Countries.Commands.UpdateCountryCommand;
-using Application.Countries.Queries.GetCountryByIdQuery;
-using AutoMapper;
+﻿using AutoMapper;
+using Geo.Api.Application.Countries.Commands.CreateCountryCommand;
+using Geo.Api.Application.Countries.Commands.UpdateCountryCommand;
+using Geo.Api.Application.Countries.Queries.GetCountryByIdQuery;
+using Geo.Api.V1.Countries.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Models;
 
-[Route("api/v1/countries/")]
-public sealed class V1CountriesController : ControllerBase
+namespace Geo.Api.V1.Airports.Controllers;
+
+[Route("api/v1/airports/")]
+public sealed class V1AirportsController : ControllerBase
 {
     private readonly IMapper mapper;
     private readonly IMediator mediator;
 
-    public V1CountriesController(IMapper mapper, IMediator mediator)
+    public V1AirportsController(IMapper mapper, IMediator mediator)
     {
         this.mapper = mapper;
         this.mediator = mediator;
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(V1CountryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(V1AirportDto), StatusCodes.Status200OK)]
     public async Task<ActionResult> GetAsync(int id)
     {
-        var request = new GetCountryByIdQuery(id);
-        var country = await mediator.Send(request);
-        var countryDto = mapper.Map<V1CountryDto>(country);
-        return Ok(countryDto);
+        var request = new GetAirportByIdQuery(id);
+        var airport = await mediator.Send(request);
+        var airportDto = mapper.Map<V1AirportDto>(airport);
+        return Ok(airportDto);
     }
 
     [HttpPost]

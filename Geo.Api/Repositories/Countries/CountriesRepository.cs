@@ -1,4 +1,6 @@
-﻿namespace Geo.Api.Repositories.Countries;
+﻿using Geo.Api.Repositories.Exceptions;
+
+namespace Geo.Api.Repositories.Countries;
 
 using AutoMapper;
 using Domain.Countries;
@@ -8,12 +10,14 @@ using Models;
 
 internal sealed class CountriesRepository : ICountriesRepository
 {
+    private readonly ILogger logger;
     private readonly ApplicationContext context;
     private readonly ISystemClock systemClock;
     private readonly IMapper mapper;
 
-    public CountriesRepository(ApplicationContext context, ISystemClock systemClock, IMapper mapper)
+    public CountriesRepository(ILogger<CountriesRepository> logger, ApplicationContext context, ISystemClock systemClock, IMapper mapper)
     {
+        this.logger = logger;
         this.context = context;
         this.systemClock = systemClock;
         this.mapper = mapper;
@@ -47,8 +51,8 @@ internal sealed class CountriesRepository : ICountriesRepository
 
         if (countryEntity is null)
         {
-            //todo: выбрасывать нормальное исключение или возвращать Result
-            throw new Exception();
+            logger.LogWarning("Country with id '{Id}' not found", id);
+            throw new EntityNotFoundException(typeof(Country), id);
         }
 
         countryEntity.Name = name;

@@ -14,6 +14,12 @@ internal sealed class CountryEntity
         Osm = osm;
         UpdatedAt = updatedAt;
     }
+    
+#pragma warning disable CS8618
+    private CountryEntity()
+    {
+    }
+#pragma warning restore CS8618
 
     public int Id { get; }
 

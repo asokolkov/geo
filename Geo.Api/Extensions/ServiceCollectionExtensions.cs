@@ -1,15 +1,15 @@
-﻿namespace Geo.Api.Extensions;
+﻿using Geo.Api.V1.Countries.Mapping;
 
-using Microsoft.EntityFrameworkCore;
-using Repositories;
-using Repositories.Countries;
+namespace Geo.Api.Extensions;
 
 internal static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRepositories(this IServiceCollection services)
+    public static IServiceCollection AddAutoMapper(this IServiceCollection services)
     {
-        services.AddDbContext<ApplicationContext>(options => options.UseNpgsql());
-        services.AddScoped<ICountriesRepository, CountriesRepository>();
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddProfile<CountriesProfile>();
+        });
         return services;
     }
 }
