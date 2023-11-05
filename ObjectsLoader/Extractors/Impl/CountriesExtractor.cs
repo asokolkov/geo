@@ -4,9 +4,9 @@ using ObjectsLoader.JsonModels;
 using ObjectsLoader.Lib;
 using ObjectsLoader.Models;
 
-namespace ObjectsLoader.Extractors;
+namespace ObjectsLoader.Extractors.Impl;
 
-public class CountriesExtractor
+public class CountriesExtractor : IExtractor<Country>
 {
     private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
     

@@ -4,9 +4,9 @@ using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
 
-namespace ObjectsLoader.Extractors;
+namespace ObjectsLoader.Extractors.Impl;
 
-public class CitiesExtractor
+public class CitiesExtractor : IExtractor<City>
 {
     private const string Query = "[out:json];nwr[place=city][name];out 1;";
     

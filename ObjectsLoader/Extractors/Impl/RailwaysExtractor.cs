@@ -4,9 +4,9 @@ using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.Services;
 
-namespace ObjectsLoader.Extractors;
+namespace ObjectsLoader.Extractors.Impl;
 
-public class RailwaysExtractor
+public class RailwaysExtractor : IExtractor<Railway>
 {
     private const string Query = "[out:json];nwr[building=train_station][name];out center 1;";
     
