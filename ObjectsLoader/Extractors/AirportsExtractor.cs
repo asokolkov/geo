@@ -12,14 +12,14 @@ public class AirportsExtractor
     
     private readonly OsmClient osmClient;
     private readonly NominatimClient nominatimClient;
-    private readonly MyMemoryTranslator translator;
+    private readonly TranslatorClient translatorClient;
     private readonly TimezoneManager timezoneManager;
 
-    public AirportsExtractor(OsmClient osmClient, NominatimClient nominatimClient, MyMemoryTranslator translator, TimezoneManager timezoneManager)
+    public AirportsExtractor(OsmClient osmClient, NominatimClient nominatimClient, TranslatorClient translatorClient, TimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
-        this.translator = translator;
+        this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
     }
     
@@ -45,7 +45,7 @@ public class AirportsExtractor
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             element.Tags.TryGetValue("addr:city", out var jsonCity);
             
-            var nameRu = jsonNameRu ?? await translator.Translate(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
             if (nameRu is null)
             {
                 continue;

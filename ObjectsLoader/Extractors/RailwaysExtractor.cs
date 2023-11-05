@@ -12,14 +12,14 @@ public class RailwaysExtractor
     
     private readonly OsmClient osmClient;
     private readonly NominatimClient nominatimClient;
-    private readonly MyMemoryTranslator translator;
+    private readonly TranslatorClient translatorClient;
     private readonly TimezoneManager timezoneManager;
 
-    public RailwaysExtractor(OsmClient osmClient, NominatimClient nominatimClient, MyMemoryTranslator translator, TimezoneManager timezoneManager)
+    public RailwaysExtractor(OsmClient osmClient, NominatimClient nominatimClient, TranslatorClient translatorClient, TimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
-        this.translator = translator;
+        this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
     }
     
@@ -44,7 +44,7 @@ public class RailwaysExtractor
             element.Tags.TryGetValue("addr:city", out var jsonCity);
             element.Tags.TryGetValue("uic_ref", out var uic);
             
-            var nameRu = jsonNameRu ?? await translator.Translate(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
             if (nameRu is null)
             {
                 continue;

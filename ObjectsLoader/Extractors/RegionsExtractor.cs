@@ -11,12 +11,12 @@ public class RegionsExtractor
     private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 1;";
     
     private readonly OsmClient osmClient;
-    private readonly MyMemoryTranslator translator;
+    private readonly TranslatorClient translatorClient;
     
-    public RegionsExtractor(OsmClient osmClient, MyMemoryTranslator translator)
+    public RegionsExtractor(OsmClient osmClient, TranslatorClient translatorClient)
     {
         this.osmClient = osmClient;
-        this.translator = translator;
+        this.translatorClient = translatorClient;
     }
     
     public async Task<List<Region>> Extract()
@@ -36,7 +36,7 @@ public class RegionsExtractor
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
-            var nameRu = jsonNameRu ?? await translator.Translate(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
             if (nameRu is null)
             {
                 continue;

@@ -12,14 +12,14 @@ public class CitiesExtractor
     
     private readonly OsmClient osmClient;
     private readonly NominatimClient nominatimClient;
-    private readonly MyMemoryTranslator translator;
+    private readonly TranslatorClient translatorClient;
     private readonly TimezoneManager timezoneManager;
 
-    public CitiesExtractor(OsmClient osmClient, NominatimClient nominatimClient, MyMemoryTranslator translator, TimezoneManager timezoneManager)
+    public CitiesExtractor(OsmClient osmClient, NominatimClient nominatimClient, TranslatorClient translatorClient, TimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
-        this.translator = translator;
+        this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
     }
     
@@ -43,7 +43,7 @@ public class CitiesExtractor
             element.Tags.TryGetValue("is_in:iso_3166_2", out var jsonRegionIso);
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
-            var nameRu = jsonNameRu ?? await translator.Translate(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
             if (nameRu is null)
             {
                 continue;

@@ -13,12 +13,12 @@ public class CountriesExtractor
     private const string CountriesPhoneCodesPath = "../../../lib/CountriesPhoneCodes.json";
     
     private readonly OsmClient osmClient;
-    private readonly MyMemoryTranslator translator;
+    private readonly TranslatorClient translatorClient;
     
-    public CountriesExtractor(OsmClient osmClient, MyMemoryTranslator translator)
+    public CountriesExtractor(OsmClient osmClient, TranslatorClient translatorClient)
     {
         this.osmClient = osmClient;
-        this.translator = translator;
+        this.translatorClient = translatorClient;
     }
     
     public async Task<List<Country>> Extract()
@@ -44,7 +44,7 @@ public class CountriesExtractor
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
-            var nameRu = jsonNameRu ?? await translator.Translate(name);
+            var nameRu = jsonNameRu ?? await translatorClient.Fetch(name);
             if (nameRu is null)
             {
                 continue;
