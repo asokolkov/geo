@@ -13,9 +13,9 @@ public class CitiesExtractor : IExtractor<City>
     private readonly IOsmClient osmClient;
     private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
-    private readonly TimezoneManager timezoneManager;
+    private readonly ITimezoneManager timezoneManager;
 
-    public CitiesExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, TimezoneManager timezoneManager)
+    public CitiesExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;

@@ -1,8 +1,6 @@
-﻿using ObjectsLoader.Clients;
-using ObjectsLoader.Clients.Impl;
-using ObjectsLoader.Extractors;
+﻿using ObjectsLoader.Clients.Impl;
 using ObjectsLoader.Extractors.Impl;
-using ObjectsLoader.Services;
+using ObjectsLoader.Services.Impl;
 
 var osmClient = new OsmClient();
 var nominatimClient = new NominatimClient();

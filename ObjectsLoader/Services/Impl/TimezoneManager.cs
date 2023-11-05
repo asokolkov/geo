@@ -2,9 +2,9 @@
 using GeoTimeZone;
 using TimeZoneConverter;
 
-namespace ObjectsLoader.Services;
+namespace ObjectsLoader.Services.Impl;
 
-public class TimezoneManager
+public class TimezoneManager : ITimezoneManager
 {
     public string GetUtcTimezone(double latitude, double longitude)
     {

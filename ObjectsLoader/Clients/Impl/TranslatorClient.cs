@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using ObjectsLoader.Services;
+using ObjectsLoader.Services.Impl;
 
 namespace ObjectsLoader.Clients.Impl;
 

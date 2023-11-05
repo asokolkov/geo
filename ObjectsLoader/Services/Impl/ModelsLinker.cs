@@ -1,8 +1,8 @@
 ﻿using ObjectsLoader.Models;
 
-namespace ObjectsLoader.Services;
+namespace ObjectsLoader.Services.Impl;
 
-public class ModelsLinker
+public class ModelsLinker : IModelsLinker
 {
     public void Link(List<Region> regions, List<Country> countries)
     {

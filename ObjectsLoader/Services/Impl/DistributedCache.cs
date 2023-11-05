@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 
-namespace ObjectsLoader.Services;
+namespace ObjectsLoader.Services.Impl;
 
-public class DistributedCache
+public class DistributedCache : IDistributedCache
 {
     private readonly MemoryCache cache = new(new MemoryCacheOptions());
     
@@ -27,5 +27,4 @@ public class DistributedCache
         Set(key, value);
         await Task.CompletedTask;
     }
-
 }

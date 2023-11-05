@@ -13,9 +13,9 @@ public class RailwaysExtractor : IExtractor<Railway>
     private readonly IOsmClient osmClient;
     private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
-    private readonly TimezoneManager timezoneManager;
+    private readonly ITimezoneManager timezoneManager;
 
-    public RailwaysExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, TimezoneManager timezoneManager)
+    public RailwaysExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
