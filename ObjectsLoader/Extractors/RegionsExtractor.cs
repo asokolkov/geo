@@ -2,7 +2,6 @@
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
-using ObjectsLoader.Services;
 
 namespace ObjectsLoader.Extractors;
 

@@ -1,16 +1,14 @@
 ﻿using Newtonsoft.Json;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
+using ObjectsLoader.Lib;
 using ObjectsLoader.Models;
-using ObjectsLoader.Services;
 
 namespace ObjectsLoader.Extractors;
 
 public class CountriesExtractor
 {
     private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
-    private const string CountriesPhoneMasksPath = "../../../lib/CountriesPhoneMasks.json";
-    private const string CountriesPhoneCodesPath = "../../../lib/CountriesPhoneCodes.json";
     
     private readonly OsmClient osmClient;
     private readonly TranslatorClient translatorClient;
@@ -29,11 +27,6 @@ public class CountriesExtractor
             return new List<Country>();
         }
         var jsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
-        
-        var countriesPhoneCodesString = await File.ReadAllTextAsync(CountriesPhoneCodesPath);
-        var countriesPhoneCodes = JsonConvert.DeserializeObject<Dictionary<string, string>>(countriesPhoneCodesString);
-        var countriesPhoneMasksString = await File.ReadAllTextAsync(CountriesPhoneMasksPath);
-        var countriesPhoneMasks = JsonConvert.DeserializeObject<Dictionary<string, string>>(countriesPhoneMasksString);
         
         var result = new List<Country>();
         foreach (var element in jsonRoot!.Elements)
@@ -57,8 +50,8 @@ public class CountriesExtractor
                 Iso2 = iso2,
                 Iso3 = iso3,
                 NameRu = nameRu,
-                PhoneCode = countriesPhoneCodes![iso2],
-                PhoneMask = countriesPhoneMasks![iso2]
+                PhoneCode = CountriesPhones.Codes[iso2],
+                PhoneMask = CountriesPhones.Masks[iso2]
             });
         }
         
