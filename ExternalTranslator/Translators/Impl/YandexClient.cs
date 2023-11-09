@@ -17,7 +17,7 @@ internal class YandexClient : TranslatorClientBase, ITranslatorClient
     public YandexClient(IOptions<YandexClientOptions> options, IDistributedCache cache) : base(cache)
     {
         this.options = options.Value;
-        HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.options.ApiKey);
+        HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Api-Key", this.options.ApiKey);
         Model = new Translator
         {
             Id = "Yandex",
