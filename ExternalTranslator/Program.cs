@@ -16,7 +16,7 @@ builder.Services.Configure<YandexClientOptions>(builder.Configuration.GetSection
 
 builder.Services.AddScoped<IDistributedCache, InMemoryDistributedCache>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
-builder.Services.AddScoped<ITranslatorClient, MyMemoryClient>();
+//builder.Services.AddScoped<ITranslatorClient, MyMemoryClient>();
 builder.Services.AddScoped<ITranslatorClient, YandexClient>();
 
 var app = builder.Build();

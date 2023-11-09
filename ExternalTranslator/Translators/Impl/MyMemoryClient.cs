@@ -44,7 +44,7 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
         }
         var url = string.Format(options.ApiUrl, text, validSource, target);
         var response = await Fetch(url);
-        var translation = response?.Response.TranslatedText;
+        var translation = response?.Response?.TranslatedText;
         if (translation is null)
         {
             return null;

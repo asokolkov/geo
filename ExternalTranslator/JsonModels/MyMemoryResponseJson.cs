@@ -4,5 +4,5 @@ namespace ExternalTranslator.JsonModels;
 
 public class MyMemoryResponseJson
 {
-    [JsonPropertyName("translatedText")] public string TranslatedText { get; init; } = null!;
+    [JsonPropertyName("translatedText")] public string? TranslatedText { get; init; }
 }
