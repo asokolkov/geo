@@ -2,7 +2,7 @@
 
 namespace ObjectsLoader.JsonModels;
 
-public class OsmJsonRoot
+internal sealed class OsmJsonRoot
 {
     [JsonPropertyName("elements")] public List<OsmJsonElement> Elements { get; init; } = null!;
 }

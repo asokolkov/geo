@@ -1,6 +1,6 @@
 ﻿namespace ObjectsLoader.Models;
 
-public class Railway
+public sealed class Railway
 {
     public Guid Id { get; init; }
     public Guid CityId { get; set; }

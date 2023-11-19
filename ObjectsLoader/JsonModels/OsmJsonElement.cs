@@ -2,7 +2,7 @@
 
 namespace ObjectsLoader.JsonModels;
 
-public class OsmJsonElement
+internal sealed class OsmJsonElement
 {
     [JsonPropertyName("id")] public string OsmId { get; init; } = null!;
     [JsonPropertyName("lat")] public double Latitude { get; init; }

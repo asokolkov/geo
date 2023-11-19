@@ -1,6 +1,6 @@
 ﻿namespace ObjectsLoader.Models;
 
-public class Airport
+public sealed class Airport
 {
     public Guid Id { get; init; }
     public Guid CityId { get; set; }

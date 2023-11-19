@@ -1,6 +1,6 @@
 ﻿namespace ObjectsLoader.Models;
 
-public class Region
+public sealed class Region
 {
     public Guid Id { get; init; }
     public Guid CountryId { get; set; }

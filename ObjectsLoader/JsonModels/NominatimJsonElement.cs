@@ -2,7 +2,7 @@
 
 namespace ObjectsLoader.JsonModels;
 
-public class NominatimJsonElement
+internal sealed class NominatimJsonElement
 {
     [JsonPropertyName("osm_id")] public string OsmId { get; init; } = null!;
     [JsonPropertyName("address")] public Dictionary<string, string> Address { get; init; } = null!;

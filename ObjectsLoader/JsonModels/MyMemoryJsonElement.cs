@@ -2,7 +2,7 @@
 
 namespace ObjectsLoader.JsonModels;
 
-public class MyMemoryJsonElement
+internal sealed class MyMemoryJsonElement
 {
     [JsonPropertyName("responseData")] public Dictionary<string, string> ResponseData { get; init; } = null!;
 }

@@ -1,6 +1,6 @@
 ﻿namespace ObjectsLoader.Models;
 
-public class Country
+public sealed class Country
 {
     public Guid Id { get; init; }
     public string OsmId { get; init; } = null!;
