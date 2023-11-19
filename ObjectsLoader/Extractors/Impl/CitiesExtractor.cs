@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -30,7 +30,7 @@ public class CitiesExtractor : IExtractor<City>
         {
             return new List<City>();
         }
-        var jsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
         var result = new List<City>();
         foreach (var element in jsonRoot!.Elements)
@@ -56,21 +56,14 @@ public class CitiesExtractor : IExtractor<City>
             var regionIso = jsonRegionIso;
             if (regionIso is null)
             {
-                var nominatimJson = await nominatimClient.Fetch(latitude, longitude);
-                if (nominatimJson is null)
+                var isoCode = await nominatimClient.Fetch("ISO3166-2-lvl4", latitude, longitude);
+                if (isoCode is null)
                 {
                     continue;
                 }
-                var jsonElement = JsonConvert.DeserializeObject<NominatimJsonElement>(nominatimJson);
-                
-                jsonElement!.Address.TryGetValue("ISO3166-2-lvl4", out var jsonNominatimRegionCode);
-                regionIso = jsonNominatimRegionCode;
+                regionIso = isoCode;
             }
-            if (regionIso is null)
-            {
-                continue;
-            }
-            
+
             result.Add(new City
             {
                 Id = Guid.NewGuid(),

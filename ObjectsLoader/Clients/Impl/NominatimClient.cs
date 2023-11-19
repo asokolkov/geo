@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Text.Json;
+using ObjectsLoader.JsonModels;
 
 namespace ObjectsLoader.Clients.Impl;
 
@@ -13,12 +15,19 @@ public class NominatimClient : INominatimClient
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
     }
     
-    public async Task<string?> Fetch(double latitude, double longitude)
+    public async Task<string?> Fetch(string key, double latitude, double longitude)
     {
         var stringLatitude = latitude.ToString(CultureInfo.InvariantCulture);
         var stringLongitude = longitude.ToString(CultureInfo.InvariantCulture);
         var query = string.Format(Url, stringLatitude, stringLongitude);
         var response = await client.GetAsync(query);
-        return response.StatusCode == HttpStatusCode.OK ? await response.Content.ReadAsStringAsync() : null;
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+        var stringResponse = await response.Content.ReadAsStringAsync();
+        var jsonElement = JsonSerializer.Deserialize<NominatimJsonElement>(stringResponse);
+        jsonElement!.Address.TryGetValue(key, out var result);
+        return result;
     }
 }

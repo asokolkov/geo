@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -30,7 +30,7 @@ public class AirportsExtractor : IExtractor<Airport>
         {
             return new List<Airport>();
         }
-        var jsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
         var result = new List<Airport>();
         foreach (var element in jsonRoot!.Elements)
@@ -58,19 +58,11 @@ public class AirportsExtractor : IExtractor<Airport>
             var city = jsonCity;
             if (city is null)
             {
-                var nominatimJson = await nominatimClient.Fetch(latitude, longitude);
-                if (nominatimJson is null)
-                {
-                    continue;
-                }
-                var jsonElement = JsonConvert.DeserializeObject<NominatimJsonElement>(nominatimJson);
-            
-                jsonElement!.Address.TryGetValue("country_code", out var cityName);
+                var cityName = await nominatimClient.Fetch("country_code", latitude, longitude);
                 if (cityName is null)
                 {
                     continue;
                 }
-
                 city = cityName;
             }
             
@@ -79,7 +71,7 @@ public class AirportsExtractor : IExtractor<Airport>
             {
                 continue;
             }
-            var osmJsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+            var osmJsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
             var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId;
             if (cityOsmId is null)
             {

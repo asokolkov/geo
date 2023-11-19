@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -25,7 +25,7 @@ public class RegionsExtractor : IExtractor<Region>
         {
             return new List<Region>();
         }
-        var jsonRoot = JsonConvert.DeserializeObject<OsmJsonRoot>(jsonString);
+        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
 
         var result = new List<Region>();
         foreach (var element in jsonRoot!.Elements)
