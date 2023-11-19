@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ObjectsLoader.JsonModels;
 
 public class NominatimJsonElement
 {
-    [JsonProperty("osm_id")] public string OsmId { get; init; } = null!;
-    [JsonProperty("address")] public Dictionary<string, string> Address { get; init; } = null!;
+    [JsonPropertyName("osm_id")] public string OsmId { get; init; } = null!;
+    [JsonPropertyName("address")] public Dictionary<string, string> Address { get; init; } = null!;
 }

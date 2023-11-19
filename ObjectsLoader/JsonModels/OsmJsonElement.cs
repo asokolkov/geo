@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ObjectsLoader.JsonModels;
 
 public class OsmJsonElement
 {
-    [JsonProperty("id")] public string OsmId { get; init; } = null!;
-    [JsonProperty("lat")] public double Latitude { get; init; }
-    [JsonProperty("lon")] public double Longitude { get; init; }
-    [JsonProperty("tags")] public Dictionary<string, string> Tags { get; init; } = null!;
+    [JsonPropertyName("id")] public string OsmId { get; init; } = null!;
+    [JsonPropertyName("lat")] public double Latitude { get; init; }
+    [JsonPropertyName("lon")] public double Longitude { get; init; }
+    [JsonPropertyName("tags")] public Dictionary<string, string> Tags { get; init; } = null!;
 }
