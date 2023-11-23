@@ -10,8 +10,8 @@ public sealed class Railway
     public double Longitude { get; init; }
     public bool IsMain { get; init; }
     public string Rzd { get; init; } = null!;
-    public string OsmId { get; init; } = null!;
+    public int OsmId { get; init; }
     public string Timezone { get; init; } = null!;
     public string NameRu { get; init; } = null!;
-    public string CityOsmId { get; init; } = null!;
+    public int CityOsmId { get; init; }
 }

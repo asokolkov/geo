@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -10,17 +11,20 @@ public class CitiesExtractor : IExtractor<City>
 {
     private const string Query = "[out:json];nwr[place=city][name];out 1;";
     
+    private readonly ILogger<CitiesExtractor> logger;
     private readonly IOsmClient osmClient;
     private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
     private readonly ITimezoneManager timezoneManager;
 
-    public CitiesExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
+    public CitiesExtractor(ILogger<CitiesExtractor> logger, IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
+        this.logger = logger;
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
+        logger.LogInformation("{{method=\"cities_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
     }
     
     public async Task<List<City>> Extract()
@@ -64,7 +68,7 @@ public class CitiesExtractor : IExtractor<City>
                 regionIso = isoCode;
             }
 
-            result.Add(new City
+            var city = new City
             {
                 Id = Guid.NewGuid(),
                 Latitude = latitude,
@@ -73,7 +77,9 @@ public class CitiesExtractor : IExtractor<City>
                 NameRu = nameRu,
                 Timezone = timezone,
                 RegionIsoCode = regionIso
-            });
+            };
+            result.Add(city);
+            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" osm_id=\"{OsmId}\" name_ru=\"{NameRu}\" timezone=\"{Timezone}\" region_iso_code=\"{RegionIsoCode}\" msg=\"Extracted city\"}}", city.Id, latitude, longitude, osmId, nameRu, timezone, regionIso);
         }
         
         return result;

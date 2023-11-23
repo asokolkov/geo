@@ -7,7 +7,7 @@ public sealed class City
     public Guid RegionId { get; set; }
     public double Latitude { get; init; }
     public double Longitude { get; init; }
-    public string OsmId { get; init; } = null!;
+    public int OsmId { get; init; }
     public string NameRu { get; init; } = null!;
     public string Timezone { get; init; } = null!;
     public string RegionIsoCode { get; init; } = null!;

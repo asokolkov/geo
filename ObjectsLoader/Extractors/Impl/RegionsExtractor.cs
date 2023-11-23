@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -9,13 +10,16 @@ public class RegionsExtractor : IExtractor<Region>
 {
     private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 1;";
     
+    private readonly ILogger<RegionsExtractor> logger;
     private readonly IOsmClient osmClient;
     private readonly ITranslatorClient translatorClient;
-    
-    public RegionsExtractor(IOsmClient osmClient, ITranslatorClient translatorClient)
+
+    public RegionsExtractor(ILogger<RegionsExtractor> logger, IOsmClient osmClient, ITranslatorClient translatorClient)
     {
+        this.logger = logger;
         this.osmClient = osmClient;
         this.translatorClient = translatorClient;
+        logger.LogInformation("{{method=\"regions_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
     }
     
     public async Task<List<Region>> Extract()
@@ -40,14 +44,16 @@ public class RegionsExtractor : IExtractor<Region>
             {
                 continue;
             }
-            
-            result.Add(new Region
+
+            var region = new Region
             {
                 Id = Guid.NewGuid(),
                 OsmId = osmId,
                 NameRu = nameRu,
                 IsoCode = iso
-            });
+            };
+            result.Add(region);
+            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" name_ru=\"{NameRu}\" iso_code=\"{IsoCode}\" msg=\"Extracted region\"}}", region.Id, osmId, nameRu, iso);
         }
         
         return result;

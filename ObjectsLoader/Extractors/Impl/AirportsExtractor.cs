@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -10,17 +11,20 @@ public class AirportsExtractor : IExtractor<Airport>
 {
     private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center 1;";
     
+    private readonly ILogger<AirportsExtractor> logger;
     private readonly IOsmClient osmClient;
     private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
     private readonly ITimezoneManager timezoneManager;
 
-    public AirportsExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
+    public AirportsExtractor(ILogger<AirportsExtractor> logger, IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
+        this.logger = logger;
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
+        logger.LogInformation("{{method=\"airports_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
     }
     
     public async Task<List<Airport>> Extract()
@@ -77,8 +81,8 @@ public class AirportsExtractor : IExtractor<Airport>
             {
                 continue;
             }
-            
-            result.Add(new Airport
+
+            var airport = new Airport
             {
                 Id = Guid.NewGuid(),
                 OsmId = osmId,
@@ -88,8 +92,10 @@ public class AirportsExtractor : IExtractor<Airport>
                 IataEn = iataEn,
                 IataRu = iataRu,
                 Timezone = timezone,
-                CityOsmId = cityOsmId
-            });
+                CityOsmId = (int)cityOsmId
+            };
+            result.Add(airport);
+            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" name_ru=\"{NameRu}\" iata_en=\"{IataEn}\" iata_ry=\"{IataRu}\" timezone=\"{Timezone}\" city_osm_id=\"{CityOsmId}\" msg=\"Extracted airport\"}}", airport.Id, osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone, airport.CityOsmId);
         }
         
         return result;

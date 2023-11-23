@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -10,17 +11,20 @@ public class RailwaysExtractor : IExtractor<Railway>
 {
     private const string Query = "[out:json];nwr[building=train_station][name];out center 1;";
     
+    private readonly ILogger<RailwaysExtractor> logger;
     private readonly IOsmClient osmClient;
     private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
     private readonly ITimezoneManager timezoneManager;
 
-    public RailwaysExtractor(IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
+    public RailwaysExtractor(ILogger<RailwaysExtractor> logger, IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
+        this.logger = logger;
         this.osmClient = osmClient;
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
+        logger.LogInformation("{{method=\"railways_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
     }
     
     public async Task<List<Railway>> Extract()
@@ -78,8 +82,8 @@ public class RailwaysExtractor : IExtractor<Railway>
             {
                 continue;
             }
-            
-            result.Add(new Railway
+
+            var railway = new Railway
             {
                 Id = Guid.NewGuid(),
                 OsmId = osmId,
@@ -89,8 +93,10 @@ public class RailwaysExtractor : IExtractor<Railway>
                 IsMain = isMain,
                 Rzd = uic ?? "",
                 Timezone = timezone,
-                CityOsmId = cityOsmId
-            });
+                CityOsmId = (int)cityOsmId
+            };
+            result.Add(railway);
+            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" name_ru=\"{NameRu}\" is_main=\"{IsMain}\" rzd=\"{Rzd}\" timezone=\"{Timezone}\" city_osm_id=\"{CityOsmId}\" msg=\"Extracted railway\"}}", railway.Id, osmId, latitude, longitude, nameRu, isMain, railway.Rzd, timezone, railway.CityOsmId);
         }
         
         return result;
