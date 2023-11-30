@@ -9,10 +9,12 @@ public class TranslatorClientBase
 {
     protected readonly HttpClient HttpClient = new();
     private readonly IDistributedCache cache;
+    private readonly ILogger<ITranslatorClient> logger;
 
-    protected TranslatorClientBase(IDistributedCache cache)
+    protected TranslatorClientBase(IDistributedCache cache, ILogger<ITranslatorClient> logger)
     {
         this.cache = cache;
+        this.logger = logger;
     }
 
     protected Translator Model { get; init; } = null!;
@@ -25,9 +27,11 @@ public class TranslatorClientBase
             var queriesLimitReached = restriction.Type == RestrictionType.Queries && restriction.CurrentAmount + 1 >= restriction.MaxAmount;
             if (charsLimitReached || queriesLimitReached)
             {
+                logger.LogInformation("{{msg=\"Translator {Translator} can't translate because of restriction {Restriction}\"}}", Model.Id, restriction.Type.ToString());
                 return false;
             }
         }
+        logger.LogInformation("{{msg=\"Translator {Translator} can translate\"}}", Model.Id);
         return true;
     }
     
@@ -39,6 +43,7 @@ public class TranslatorClientBase
             {
                 restriction.CurrentAmount = 0;
                 restriction.TimeCheckpoint = null;
+                logger.LogInformation("{{msg=\"Translator {Translator} restriction {Restriction} reset\"}}", Model.Id, restriction.Type.ToString());
             }
         }
         await SaveCache();
@@ -59,6 +64,8 @@ public class TranslatorClientBase
                 restriction.TimeCheckpoint ??= DateTimeOffset.Now;
             }
         }
+        var logMessageText = text.Length <= 10 ? text : text[..10] + "...";
+        logger.LogInformation("{{msg=\"Translator {Translator} updated restrictions for text {Text}\"}}", Model.Id, logMessageText);
     }
     
     protected void ReadCache()

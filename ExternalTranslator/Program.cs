@@ -11,13 +11,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
 
+builder.Services.AddLogging(config =>
+{
+    config.AddSimpleConsole(options => options.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ");
+});
+
 builder.Services.Configure<MyMemoryClientOptions>(builder.Configuration.GetSection("MyMemoryClientOptions"));
 builder.Services.Configure<YandexClientOptions>(builder.Configuration.GetSection("YandexClientOptions"));
 
 builder.Services.AddScoped<IDistributedCache, InMemoryDistributedCache>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
-//builder.Services.AddScoped<ITranslatorClient, MyMemoryClient>();
-builder.Services.AddScoped<ITranslatorClient, YandexClient>();
+builder.Services.AddScoped<ITranslatorClient, MyMemoryClient>();
+// builder.Services.AddScoped<ITranslatorClient, YandexClient>();
 
 var app = builder.Build();
 
