@@ -14,13 +14,29 @@ builder.Configuration.SetBasePath(environment.ContentRootPath);
 builder.Configuration.AddJsonFile("Properties/appsettings.json", optional: true, reloadOnChange: true);
 builder.Configuration.AddJsonFile($"Properties/appsettings.{environment.EnvironmentName}.json", optional: true);
 
+var myMemoryEnv = builder.Configuration.GetSection("MyMemoryClientOptions");
+if (myMemoryEnv.GetChildren().Count() != 2)
+{
+    throw new NullReferenceException("MyMemoryClientOptions environment variable must have DetectLanguageApiKey and ApiUrl");
+}
+var yandexEnv = builder.Configuration.GetSection("YandexClientOptions");
+if (yandexEnv.GetChildren().Count() != 3)
+{
+    throw new NullReferenceException("YandexClientOptions environment variable must have ApiUrl, ApiKey and ApiFolderId");
+}
+var loggingEnv = builder.Configuration.GetSection("Logging");
+if (loggingEnv.GetChildren().Count() != 2)
+{
+    throw new NullReferenceException("Logging environment variable must have LogLevel and File");
+}
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddLogging(config => {
-    config.AddFile(builder.Configuration.GetSection("Logging"), options =>
+    config.AddFile(loggingEnv, options =>
     {
         options.FormatLogEntry = message =>
         {
@@ -39,8 +55,8 @@ builder.Services.AddLogging(config => {
     });
 });
 
-builder.Services.Configure<MyMemoryClientOptions>(builder.Configuration.GetSection("MyMemoryClientOptions"));
-builder.Services.Configure<YandexClientOptions>(builder.Configuration.GetSection("YandexClientOptions"));
+builder.Services.Configure<MyMemoryClientOptions>(myMemoryEnv);
+builder.Services.Configure<YandexClientOptions>(yandexEnv);
 
 builder.Services.AddScoped<IDistributedCache, InMemoryDistributedCache>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();

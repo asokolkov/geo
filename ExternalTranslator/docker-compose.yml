@@ -1,0 +1,20 @@
+﻿version: "3"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Properties:/home/Properties
+    logging:
+      driver: "local"
+    networks:
+      - main
+        
+volumes:
+  elasticsearch-data:
+    driver: local
+
+networks:
+  main:
