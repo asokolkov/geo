@@ -13,7 +13,7 @@ public class InMemoryDistributedCache : IDistributedCache
     {
         this.cache = cache;
         this.logger = logger;
-        logger.LogInformation("{{msg=\"InMemoryDistributedCache initialized\"}}");
+        logger.LogInformation("InMemoryDistributedCache initialized");
     }
     
     public TranslatorJson Get(string key)
@@ -21,23 +21,23 @@ public class InMemoryDistributedCache : IDistributedCache
         var cacheString = cache.Get<string>(key);
         if (cacheString is null)
         {
-            logger.LogInformation("{{msg=\"Translation not found in cache\"}}");
+            logger.LogInformation("Translator not found in cache, returning empty translator");
             return new TranslatorJson();
         }
         var json = JsonSerializer.Deserialize<TranslatorJson>(cacheString);
         if (json is not null)
         {
-            logger.LogInformation("{{msg=\"Translation found in cache with key {Key}\"}}", key);
+            logger.LogInformation("Translator found in cache with key: {Key}", key);
             return json;
         }
 
-        logger.LogInformation("{{msg=\"Translation found in cache with key {Key} but could not be deserialized\"}}", key);
+        logger.LogInformation("Translation found in cache with key: {Key} but could not be deserialized", key);
         return  new TranslatorJson();
     }
 
     public async Task<TranslatorJson> GetAsync(string key)
     {
-        logger.LogInformation("{{msg=\"Async Get called\"}}");
+        logger.LogInformation("Async getting from cache method called, creating task with default Get method");
         return await Task.FromResult(Get(key));
     }
 
@@ -45,12 +45,12 @@ public class InMemoryDistributedCache : IDistributedCache
     {
         var json = JsonSerializer.Serialize(translatorJson);
         cache.Set(translatorJson.Id, json);
-        logger.LogInformation("{{msg=\"Translation {Translation} set in cache\"}}", json);
+        logger.LogInformation("Translator: {Translation} set in cache", json);
     }
 
     public async Task SetAsync(TranslatorJson translatorJson)
     {
-        logger.LogInformation("{{msg=\"Async Set called\"}}");
+        logger.LogInformation("Async setting to cache method called, creating task with default Set method");
         Set(translatorJson);
         await Task.CompletedTask;
     }

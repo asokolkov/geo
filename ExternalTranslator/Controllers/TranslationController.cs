@@ -15,7 +15,7 @@ public class TranslationController : ControllerBase
     {
         this.translationService = translationService;
         this.logger = logger;
-        logger.LogInformation("{{msg=\"TranslationController initialized\"}}");
+        logger.LogInformation("TranslationController initialized");
     }
 
     [HttpGet]
@@ -26,11 +26,11 @@ public class TranslationController : ControllerBase
         var translation = await translationService.Translate(text, source, target);
         if (translation is not null)
         {
-            logger.LogInformation("{{msg=\"Sending 200 response with translation\"}}");
+            logger.LogInformation("Sending 200 response with translation: {Translation}", translation);
         }
         else
         {
-            logger.LogInformation("{{msg=\"Sending 404 response\"}}");
+            logger.LogInformation("Can't translate, sending 404 response");
         }
         return translation is not null ? Ok(translation) : NotFound();
     }

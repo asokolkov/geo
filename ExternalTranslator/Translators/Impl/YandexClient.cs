@@ -46,14 +46,14 @@ internal class YandexClient : TranslatorClientBase, ITranslatorClient
             }
         };
         ReadCache();
-        logger.LogInformation("{{msg=\"YandexClient initialized\"}}");
+        logger.LogInformation("YandexClient initialized");
     }
 
     public async Task<string?> Translate(string text, string? source, string target)
     {
         if (source == target)
         {
-            logger.LogInformation("{{msg=\"Source language is equal to target language, returning null\"}}");
+            logger.LogInformation("Source language is equal to target language, returning null");
             return null;
         }
 
@@ -68,14 +68,13 @@ internal class YandexClient : TranslatorClientBase, ITranslatorClient
         var translation = response?.Translations.FirstOrDefault()?["text"];
         if (translation is null)
         {
-            logger.LogInformation("{{msg=\"Translation failed, returning null\"}}");
+            logger.LogInformation("Translation failed, returning null");
             return null;
         }
         UpdateModel(text);
         await SaveCache();
         
-        var logMessageText = translation.Length <= 10 ? translation : translation[..10] + "...";
-        logger.LogInformation("{{msg=\"Successful translation {Translation}\"}}", logMessageText);
+        logger.LogInformation("Successful translation: {Translation}", translation);
         return translation;
     }
 
@@ -85,10 +84,10 @@ internal class YandexClient : TranslatorClientBase, ITranslatorClient
         var response = await HttpClient.PostAsync(options.ApiUrl, data);
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            logger.LogInformation("{{msg=\"Response code is {Code}, returning default value\"}}", response.StatusCode);
+            logger.LogInformation("Response code: {Code}, returning default value", response.StatusCode);
             return default;
         }
-        logger.LogInformation("{{msg=\"Successful request to Yandex translator API\"}}");
+        logger.LogInformation("Successful request to Yandex translator API");
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<YandexResponseJson>(content);
     }

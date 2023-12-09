@@ -27,11 +27,11 @@ public class TranslatorClientBase
             var queriesLimitReached = restriction.Type == RestrictionType.Queries && restriction.CurrentAmount + 1 >= restriction.MaxAmount;
             if (charsLimitReached || queriesLimitReached)
             {
-                logger.LogInformation("{{msg=\"Translator {Translator} can't translate because of restriction {Restriction}\"}}", Model.Id, restriction.Type.ToString());
+                logger.LogInformation("Translator: {Translator} can't translate because of restriction: {Restriction}", Model.Id, restriction.Type.ToString());
                 return false;
             }
         }
-        logger.LogInformation("{{msg=\"Translator {Translator} can translate\"}}", Model.Id);
+        logger.LogInformation("Translator: {Translator} can translate", Model.Id);
         return true;
     }
     
@@ -43,7 +43,7 @@ public class TranslatorClientBase
             {
                 restriction.CurrentAmount = 0;
                 restriction.TimeCheckpoint = null;
-                logger.LogInformation("{{msg=\"Translator {Translator} restriction {Restriction} reset\"}}", Model.Id, restriction.Type.ToString());
+                logger.LogInformation("Translator: {Translator} restriction: {Restriction} reset", Model.Id, restriction.Type.ToString());
             }
         }
         await SaveCache();
@@ -64,8 +64,7 @@ public class TranslatorClientBase
                 restriction.TimeCheckpoint ??= DateTimeOffset.Now;
             }
         }
-        var logMessageText = text.Length <= 10 ? text : text[..10] + "...";
-        logger.LogInformation("{{msg=\"Translator {Translator} updated restrictions for text {Text}\"}}", Model.Id, logMessageText);
+        logger.LogInformation("Translator: {Translator} updated restrictions after text: {Text}", Model.Id, text);
     }
     
     protected void ReadCache()
@@ -77,6 +76,7 @@ public class TranslatorClientBase
             modelRestriction.CurrentAmount = restriction.CurrentAmount;
             modelRestriction.TimeCheckpoint = restriction.TimeCheckpoint;
         }
+        logger.LogInformation("Translator with id: {Id} restrictions read from cache", Model.Id);
     }
     
     protected async Task SaveCache()

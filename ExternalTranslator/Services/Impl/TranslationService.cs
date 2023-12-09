@@ -11,14 +11,14 @@ public class TranslationService : ITranslationService
     {
         translators = translatorsClients.ToList();
         this.logger = logger;
-        logger.LogInformation("{{msg=\"TranslationService initialized\"}}");
+        logger.LogInformation("TranslationService initialized");
     }
     
     public async Task<string?> Translate(string text, string? source, string target)
     {
         if (source == target)
         {
-            logger.LogInformation("{{msg=\"Source language is equal to target language, returning default text\"}}");
+            logger.LogInformation("Source language is equal to target language, returning passed text");
             return text;
         }
         foreach (var translator in translators)

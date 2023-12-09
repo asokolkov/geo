@@ -35,7 +35,7 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
             }
         };
         ReadCache();
-        logger.LogInformation("{{msg=\"MyMemoryClient initialized\"}}");
+        logger.LogInformation("MyMemoryClient initialized");
     }
 
     public async Task<string?> Translate(string text, string? source, string target)
@@ -43,23 +43,22 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
         var validSource = source ?? await IdentifySource(text);
         if (source == target)
         {
-            logger.LogInformation("{{msg=\"Source language is equal to target language, returning null\"}}");
+            logger.LogInformation("Source language is equal to target language, returning null");
             return null;
         }
         var url = string.Format(options.ApiUrl, text, validSource, target);
-        logger.LogInformation("{{msg=\"API URL built '{Url}'\"}}", url);
+        logger.LogInformation("API URL: {Url} built", url);
         var response = await Fetch(url);
         var translation = response?.Response?.TranslatedText;
         if (translation is null)
         {
-            logger.LogInformation("{{msg=\"Translation failed, returning null\"}}");
+            logger.LogInformation("Translation failed, returning null");
             return null;
         }
         UpdateModel(text);
         await SaveCache();
         
-        var logMessageText = translation.Length <= 10 ? translation : translation[..10] + "...";
-        logger.LogInformation("{{msg=\"Successful translation {Translation}\"}}", logMessageText);
+        logger.LogInformation("Successful translation: {Translation}", translation);
         return translation;
     }
 
@@ -68,10 +67,10 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
         var response = await HttpClient.GetAsync(url);
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            logger.LogInformation("{{msg=\"Response code is {Code}, returning default value\"}}", response.StatusCode);
+            logger.LogInformation("Response code: {Code}, returning default value", response.StatusCode);
             return default;
         }
-        logger.LogInformation("{{msg=\"Successful request to MyMemory translator API\"}}");
+        logger.LogInformation("Successful request to MyMemory translator API");
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<MyMemoryJson>(content);
     }
@@ -82,11 +81,10 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
         var bestLanguage = languageResponse.FirstOrDefault(x => x.reliable)?.language;
         if (bestLanguage is not null)
         {
-            var logMessageText = text.Length <= 10 ? text : text[..10] + "...";
-            logger.LogInformation("{{msg=\"Source language of text '{Text}' is {Source}\"}}", logMessageText, bestLanguage);
+            logger.LogInformation("Text: {Text} has source language: {Source}", text, bestLanguage);
             return bestLanguage;
         }
-        logger.LogInformation("{{msg=\"Can't identify source language, returning default EN\"}}");
+        logger.LogInformation("Can't identify source language, returning default en");
         return "en";
     }
 }
