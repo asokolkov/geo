@@ -21,6 +21,7 @@ public class TranslatorClientBase
 
     public bool CanTranslate(string text)
     {
+        logger.LogInformation("Checking if translator can translate");
         foreach (var restriction in Model.Restrictions)
         {
             var charsLimitReached = restriction.Type == RestrictionType.Chars && restriction.CurrentAmount + text.Length >= restriction.MaxAmount;
@@ -37,6 +38,7 @@ public class TranslatorClientBase
     
     public async Task TryResetRestrictions()
     {
+        logger.LogInformation("Trying to reset restrictions");
         foreach (var restriction in Model.Restrictions)
         {
             if (DateTimeOffset.Now - restriction.TimeCheckpoint > restriction.Period)

@@ -77,6 +77,7 @@ internal class MyMemoryClient : TranslatorClientBase, ITranslatorClient
     
     private async Task<string> IdentifySource(string text)
     {
+        logger.LogInformation("Identifying source language for text: {Text}", text);
         var languageResponse = await languageIdentifier.DetectAsync(text);
         var bestLanguage = languageResponse.FirstOrDefault(x => x.reliable)?.language;
         if (bestLanguage is not null)

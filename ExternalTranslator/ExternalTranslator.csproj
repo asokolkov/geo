@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="DetectLanguage" Version="1.0.0" />
+        <PackageReference Include="NReco.Logging.File" Version="1.1.7" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
     </ItemGroup>
