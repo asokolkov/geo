@@ -6,15 +6,85 @@ services:
     ports:
       - "8080:80"
     volumes:
+      - logs:/home/Temp
       - ./Properties:/home/Properties
-    logging:
-      driver: "local"
     networks:
-      - main
+      - elk
         
+  filebeat:
+    image: elastic/filebeat:8.10.2
+    labels:
+      co.elastic.logs/enabled: "false"
+    user: root
+    command: --strict.perms=false
+    volumes:
+      - ./Configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - logs:/home/Temp
+    depends_on:
+      - app
+    networks:
+      - elk
+
+  logstash:
+    image: logstash:8.10.2
+    labels:
+      co.elastic.logs/enabled: "false"
+    ports:
+      - "5044:5044"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    volumes:
+      - ./Configs/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./Configs/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      - filebeat
+    networks:
+      - elk
+
+  elasticsearch:
+    image: elasticsearch:8.10.2
+    labels:
+      co.elastic.logs/enabled: "false"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 32767
+        hard: 32767
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    depends_on:
+      - logstash
+    networks:
+      - elk
+
+  kibana:
+    image: kibana:8.10.2
+    labels:
+      co.elastic.logs/enabled: "false"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+
 volumes:
+  logs:
   elasticsearch-data:
-    driver: local
 
 networks:
-  main:
+  elk:

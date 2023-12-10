@@ -1,0 +1,8 @@
+﻿filebeat.inputs:
+  - type: filestream
+    id: app-logs
+    paths:
+      - /home/Temp/*.log
+
+output.logstash:
+  hosts: ["logstash:5044"]
