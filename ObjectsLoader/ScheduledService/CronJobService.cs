@@ -1,5 +1,4 @@
-﻿using Cronos;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace ObjectsLoader.ScheduledService;
 

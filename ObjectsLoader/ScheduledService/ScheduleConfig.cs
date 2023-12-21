@@ -1,6 +1,4 @@
-﻿using ObjectsLoader.ScheduledService;
-
-namespace ObjectsLoader.Extensions;
+﻿namespace ObjectsLoader.ScheduledService;
 
 public class ScheduleConfig<T> : IScheduleConfig<T>
 {

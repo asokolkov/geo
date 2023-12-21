@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ObjectsLoader.Extensions;
 
 namespace ObjectsLoader.ScheduledService;
 
@@ -15,7 +14,7 @@ public static class ScheduledServiceExtensions
         options.Invoke(config);
         if (string.IsNullOrWhiteSpace(config.CronExpression))
         {
-            throw new ArgumentNullException(nameof(ScheduleConfig<T>.CronExpression), @"Empty Cron Expression is not allowed.");
+            throw new ArgumentNullException(nameof(ScheduleConfig<T>.CronExpression), "Empty Cron Expression is not allowed.");
         }
 
         services.AddSingleton<IScheduleConfig<T>>(config);
