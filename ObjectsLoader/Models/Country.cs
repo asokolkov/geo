@@ -4,9 +4,9 @@ public sealed class Country
 {
     public Guid Id { get; init; }
     public int OsmId { get; init; }
-    public string NameRu { get; init; } = null!;
-    public string PhoneCode { get; init; } = null!;
-    public string PhoneMask { get; init; } = null!;
-    public string Iso2 { get; init; } = null!;
-    public string Iso3 { get; init; } = null!;
+    public required string NameRu { get; init; }
+    public required string PhoneCode { get; init; }
+    public required string PhoneMask { get; init; }
+    public required string Iso2 { get; init; }
+    public required string Iso3 { get; init; }
 }
