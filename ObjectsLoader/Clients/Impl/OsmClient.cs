@@ -6,28 +6,33 @@ namespace ObjectsLoader.Clients.Impl;
 public class OsmClient : ClientBase, IOsmClient
 {
     private const string Url = "https://overpass-api.de/api/interpreter?data={0}";
-    private readonly ILogger<OsmClient> logger;
 
-    public OsmClient(ILogger<OsmClient> logger)
+    public OsmClient(ILogger<OsmClient> logger) : base(logger)
     {
-        this.logger = logger;
+        Logger.LogInformation("OsmClient initialized with url: '{Url}'", Url);
     }
     
     public async Task<string?> Fetch(string data)
     {
+        Logger.LogInformation("Fetching data from osm API");
+
         var query = string.Format(Url, data);
+        
+        Logger.LogInformation("Osm query: '{Query}' built, sending request", query);
+        
         var response = await SendRequest(query);
         if (response is null)
         {
-            logger.LogInformation("{{method=\"fetch\" status=\"fail\" msg=\"Bad response\"}}");
+            Logger.LogInformation("Failed to send request, returning null");
             return null;
         }
-        logger.LogInformation("{{method=\"fetch\" http_method=\"{Method}\" uri=\"{Uri}\" status_code=\"{Code}\" msg=\"Got response\"}}", response.RequestMessage?.Method, response.RequestMessage?.RequestUri, response.StatusCode);
-        if (response.StatusCode == HttpStatusCode.OK)
+        if (response.StatusCode != HttpStatusCode.OK)
         {
-            return await response.Content.ReadAsStringAsync();
+            Logger.LogInformation("Response status code is not 200, returning null");
+            return null;
         }
-        logger.LogInformation("{{method=\"fetch\" status=\"fail\" msg=\"Bad response status code\"}}");
-        return null;
+        
+        Logger.LogInformation("Response status code is 200, returning response content");
+        return await response.Content.ReadAsStringAsync();
     }
 }

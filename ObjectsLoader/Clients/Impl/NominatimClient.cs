@@ -9,36 +9,47 @@ namespace ObjectsLoader.Clients.Impl;
 public class NominatimClient : ClientBase, INominatimClient
 {
     private const string Url = "https://nominatim.openstreetmap.org/reverse?format=json&lat={0}&lon={1}";
-    private readonly ILogger<NominatimClient> logger;
     
-    public NominatimClient(ILogger<NominatimClient> logger)
+    public NominatimClient(ILogger<NominatimClient> logger) : base(logger)
     {
-        this.logger = logger;
         Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
-        logger.LogInformation("{{method=\"nominatim_client_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        Logger.LogInformation("NominatimClient initialized with url: '{Url}'", Url);
     }
     
     public async Task<string?> Fetch(string key, double latitude, double longitude)
     {
+        Logger.LogInformation("Fetching data from nominatim API with key: {Key}, latitude: {Lat}, longitude: {Lon}", key, latitude, longitude);
+        
         var stringLatitude = latitude.ToString(CultureInfo.InvariantCulture);
         var stringLongitude = longitude.ToString(CultureInfo.InvariantCulture);
         var query = string.Format(Url, stringLatitude, stringLongitude);
+        
+        Logger.LogInformation("Nominatim query: '{Query}' built, sending request", query);
+        
         var response = await SendRequest(query);
         if (response is null)
         {
-            logger.LogInformation("{{method=\"fetch\" status=\"fail\" msg=\"Bad response\"}}");
+            Logger.LogInformation("Failed to send request, returning null");
             return null;
         }
-        logger.LogInformation("{{method=\"fetch\" http_method=\"{Method}\" uri=\"{Uri}\" status_code=\"{Code}\" msg=\"Got response\"}}", response.RequestMessage?.Method, response.RequestMessage?.RequestUri, response.StatusCode);
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            logger.LogInformation("{{method=\"fetch\" status=\"fail\" msg=\"Bad response status code\"}}");
+            Logger.LogInformation("Response status code is not 200, returning null");
             return null;
         }
+        
+        Logger.LogInformation("Parsing response data");
         var stringResponse = await response.Content.ReadAsStringAsync();
         var jsonElement = JsonSerializer.Deserialize<NominatimJsonElement>(stringResponse);
         jsonElement!.Address.TryGetValue(key, out var result);
-        logger.LogInformation("{{method=\"fetch\" status=\"{Status}\" msg=\"For key {Key}, latitude {StringLatitude} and longitude {StringLongitude} found {Result}\"}}", result is null ? "fail" : "success", key, stringLatitude, stringLongitude, result);
-        return result;
+
+        if (result is not null)
+        {
+            Logger.LogInformation("Found value: {Result} by key: {Key} in response data", result, key);
+            return result;
+        }
+        
+        Logger.LogInformation("Can't find key: {Key} in response data, returning null", key);
+        return null;
     }
 }

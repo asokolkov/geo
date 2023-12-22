@@ -24,18 +24,21 @@ public class RailwaysExtractor : IExtractor<Railway>
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
-        logger.LogInformation("{{method=\"railways_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("RailwaysExtractor initialized with osm query: '{Query}'", Query);
     }
     
     public async Task<List<Railway>> Extract()
     {
+        logger.LogInformation("Extracting railways, fetching from osm by query");
         var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
+            logger.LogInformation("Fetching failed, returning empty list");
             return new List<Railway>();
         }
         var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
+        logger.LogInformation("Parsing fetched railways");
         var result = new List<Railway>();
         foreach (var element in jsonRoot!.Elements)
         {
@@ -96,9 +99,10 @@ public class RailwaysExtractor : IExtractor<Railway>
                 CityOsmId = (int)cityOsmId
             };
             result.Add(railway);
-            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" name_ru=\"{NameRu}\" is_main=\"{IsMain}\" rzd=\"{Rzd}\" timezone=\"{Timezone}\" city_osm_id=\"{CityOsmId}\" msg=\"Extracted railway\"}}", railway.Id, osmId, latitude, longitude, nameRu, isMain, railway.Rzd, timezone, railway.CityOsmId);
+            logger.LogInformation("Parsed railway with id: {Id}, osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, station main: {IsMain}, rzd: {Rzd}, timezone: {Timezone}, city osm id: {CityOsmId}", railway.Id, osmId, latitude, longitude, nameRu, isMain, railway.Rzd, timezone, railway.CityOsmId);
         }
         
+        logger.LogInformation("Returning extracted railways");
         return result;
     }
 }

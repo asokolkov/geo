@@ -24,18 +24,21 @@ public class AirportsExtractor : IExtractor<Airport>
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
-        logger.LogInformation("{{method=\"airports_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("AirportsExtractor initialized with osm query: '{Query}'", Query);
     }
     
     public async Task<List<Airport>> Extract()
     {
+        logger.LogInformation("Extracting airports, fetching from osm by query");
         var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
+            logger.LogInformation("Fetching failed, returning empty list");
             return new List<Airport>();
         }
         var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
+        logger.LogInformation("Parsing fetched airports");
         var result = new List<Airport>();
         foreach (var element in jsonRoot!.Elements)
         {
@@ -95,9 +98,10 @@ public class AirportsExtractor : IExtractor<Airport>
                 CityOsmId = (int)cityOsmId
             };
             result.Add(airport);
-            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" name_ru=\"{NameRu}\" iata_en=\"{IataEn}\" iata_ry=\"{IataRu}\" timezone=\"{Timezone}\" city_osm_id=\"{CityOsmId}\" msg=\"Extracted airport\"}}", airport.Id, osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone, airport.CityOsmId);
+            logger.LogInformation("Parsed airport with id: {Id}, osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, english iata code: {IataEn}, russian iata code: {IataRu}, timezone: {Timezone}, city osm id: {CityOsmId}", airport.Id, osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone, airport.CityOsmId);
         }
         
+        logger.LogInformation("Returning extracted airports");
         return result;
     }
 }

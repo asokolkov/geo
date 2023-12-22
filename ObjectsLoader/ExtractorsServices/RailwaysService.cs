@@ -14,24 +14,24 @@ public class RailwaysService : CronJobService
     {
         this.logger = logger;
         this.extractor = extractor;
-        logger.LogInformation("{{method=\"railways_service_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("RailwaysService initialized");
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Starting cron task with railways extraction");
         var railways = await extractor.Extract();
         var amount = railways.Count;
         if (amount == 0)
         {
-            logger.LogInformation("{{method=\"do_work\" msg=\"No railways extracted\"}}");
-        }
-        else
-        {
-            logger.LogInformation("{{method=\"do_work\" msg=\"Found {Amount} railways\"}}", amount);
+            logger.LogInformation("Found 0 railways, nothing to send to API, finishing");
+            return;
         }
         
+        logger.LogInformation("Found {Amount} railways, sending to API", amount);
+
         // TODO: send to API client
         
-        logger.LogInformation("{{method=\"do_work\" status=\"success\" msg=\"All railways sent to API\"}}");
+        logger.LogInformation("All railways sent to API");
     }
 }

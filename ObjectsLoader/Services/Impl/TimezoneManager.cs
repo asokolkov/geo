@@ -14,43 +14,48 @@ public partial class TimezoneManager : ITimezoneManager
     public TimezoneManager(ILogger<TimezoneManager> logger)
     {
         this.logger = logger;
-        logger.LogInformation("{{method=\"timezone_manager_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("TimezoneManager initialized");
     }
     
     public string GetUtcTimezone(double latitude, double longitude)
     {
+        logger.LogInformation("Searching utc timezone by latitude: {Lat} and longitude: {Lon}", latitude, longitude);
         var iana = TimeZoneLookup.GetTimeZone(latitude, longitude).Result;
-        logger.LogInformation("{{method=\"get_utc_timezone\" status=\"success\" msg=\"(lat: {Latitude}, lon: {Longitude}) -> {Iana}\"}}", latitude, longitude, iana);
+        logger.LogInformation("Converted coordinates to iana code, converting to utc");
         return IanaToUtc(iana);
     }
 
     public string GetUtcTimezone(string unknownTimezone)
     {
+        logger.LogInformation("Trying to convert unknown timezone: {UnknownTimezone} to utc", unknownTimezone);
         if (IanaRegex().IsMatch(unknownTimezone))
         {
+            logger.LogInformation("Timezone matches iana code pattern, converting");
             return IanaToUtc(unknownTimezone);
         }
         
         if (UtcRegex().IsMatch(unknownTimezone))
         {
+            logger.LogInformation("Timezone matches utc pattern, converting");
             var utc = unknownTimezone[^2] != '0' ? $"{unknownTimezone[..^1]}0{unknownTimezone[^1]}" : unknownTimezone;
-            logger.LogInformation("{{method=\"get_utc_timezone\" status=\"success\" msg=\"{UnknownTimezone} -> {Utc}\"}}", unknownTimezone, utc);
+            logger.LogInformation("Converted unknown timezone: {UnknownTimezone} to utc: {Utc}", unknownTimezone, utc);
             return utc;
         }
         
-        logger.LogInformation("{{method=\"get_utc_timezone\" status=\"fail\" msg=\"Unknown timezone {UnknownTimezone}\"}}", unknownTimezone);
+        logger.LogInformation("Unable to identify timezone, returning same timezone: {UnknownTimezone}", unknownTimezone);
         return unknownTimezone;
     }
 
     private string IanaToUtc(string iana)
     {
+        logger.LogInformation("Converting iana code: {Iana} to utc", iana);
         var utc = TZConvert.GetTimeZoneInfo(iana);
         var negativeHours = utc.BaseUtcOffset.Hours < 0;
         var cleanHours = negativeHours ? utc.BaseUtcOffset.Hours * -1 : utc.BaseUtcOffset.Hours;
         var hoursOperator = negativeHours ? "-" : "+";
         var hoursString = cleanHours < 10 ? $"0{cleanHours}" : cleanHours.ToString();
         var result = $"UTC{hoursOperator}{hoursString}";
-        logger.LogInformation("{{method=\"iana_to_utc\" status=\"success\" msg=\"{Iana} -> {Utc}\"}}", iana, result);
+        logger.LogInformation("Converted iana code: {Iana} to utc: {Utc}", iana, result);
         return result;
     }
 }

@@ -14,24 +14,24 @@ public class AirportsService : CronJobService
     {
         this.logger = logger;
         this.extractor = extractor;
-        logger.LogInformation("{{method=\"airports_service_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("AirportsService initialized");
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Starting cron task with airports extraction");
         var airports = await extractor.Extract();
         var amount = airports.Count;
         if (amount == 0)
         {
-            logger.LogInformation("{{method=\"do_work\" msg=\"No airports extracted\"}}");
+            logger.LogInformation("Found 0 airports, nothing to send to API, finishing");
+            return;
         }
-        else
-        {
-            logger.LogInformation("{{method=\"do_work\" msg=\"Found {Amount} airports\"}}", amount);
-        }
-        
+
+        logger.LogInformation("Found {Amount} airports, sending to API", amount);
+
         // TODO: send to API client
         
-        logger.LogInformation("{{method=\"do_work\" status=\"success\" msg=\"All airports sent to API\"}}");
+        logger.LogInformation("All airports sent to API");
     }
 }

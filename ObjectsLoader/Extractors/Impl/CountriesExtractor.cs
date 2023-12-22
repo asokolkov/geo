@@ -20,18 +20,21 @@ public class CountriesExtractor : IExtractor<Country>
         this.logger = logger;
         this.osmClient = osmClient;
         this.translatorClient = translatorClient;
-        logger.LogInformation("{{method=\"countries_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("CountriesExtractor initialized with osm query: '{Query}'", Query);
     }
     
     public async Task<List<Country>> Extract()
     {
+        logger.LogInformation("Extracting countries, fetching from osm by query");
         var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
+            logger.LogInformation("Fetching failed, returning empty list");
             return new List<Country>();
         }
         var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
+        logger.LogInformation("Parsing fetched countries");
         var result = new List<Country>();
         foreach (var element in jsonRoot!.Elements)
         {
@@ -58,9 +61,10 @@ public class CountriesExtractor : IExtractor<Country>
                 PhoneMask = CountriesPhones.Masks[iso2]
             };
             result.Add(country);
-            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" iso_2=\"{Iso2}\" iso_3=\"{Iso3}\" name_ru=\"{NameRu}\" phone_code=\"{PhoneCode}\" phone_mask=\"{PhoneMask}\" msg=\"Extracted country\"}}", country.Id, osmId, iso2, iso3, nameRu, country.PhoneCode, country.PhoneMask);
+            logger.LogInformation("Parsed country with id: {Id}, osm id: {OsmId}, iso code 2: {Iso2}, iso code 3: {Iso3}, russian name: {NameRu}, phone code: {PhoneCode}, phone mask: {PhoneMask}", country.Id, osmId, iso2, iso3, nameRu, country.PhoneCode, country.PhoneMask);
         }
         
+        logger.LogInformation("Returning extracted countries");
         return result;
     }
 }

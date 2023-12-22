@@ -14,16 +14,18 @@ public class RegionsService : CronJobService
     {
         this.logger = logger;
         this.extractor = extractor;
-        logger.LogInformation("{{method=\"regions_service_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("RegionsService initialized");
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Starting cron task with regions extraction");
         var regions = await extractor.Extract();
         var amount = regions.Count;
         if (amount == 0)
         {
-            logger.LogInformation("{{method=\"do_work\" msg=\"No regions extracted\"}}");
+            logger.LogInformation("Found 0 regions, nothing to send to API, finishing");
+            return;
         }
         else
         {

@@ -24,18 +24,21 @@ public class CitiesExtractor : IExtractor<City>
         this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
-        logger.LogInformation("{{method=\"cities_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("CitiesExtractor initialized with osm query: '{Query}'", Query);
     }
     
     public async Task<List<City>> Extract()
     {
+        logger.LogInformation("Extracting cities, fetching from osm by query");
         var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
+            logger.LogInformation("Fetching failed, returning empty list");
             return new List<City>();
         }
         var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
         
+        logger.LogInformation("Parsing fetched cities");
         var result = new List<City>();
         foreach (var element in jsonRoot!.Elements)
         {
@@ -79,9 +82,10 @@ public class CitiesExtractor : IExtractor<City>
                 RegionIsoCode = regionIso
             };
             result.Add(city);
-            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" latitude=\"{Latitude}\" longitude=\"{Longitude}\" osm_id=\"{OsmId}\" name_ru=\"{NameRu}\" timezone=\"{Timezone}\" region_iso_code=\"{RegionIsoCode}\" msg=\"Extracted city\"}}", city.Id, latitude, longitude, osmId, nameRu, timezone, regionIso);
+            logger.LogInformation("Parsed city with id: {Id}, latitude: {Lat}, longitude: {Lon}, osm id: {OsmId}, russian name: {NameRu}, timezone: {Timezone}, region iso code: {IsoCode}", city.Id, latitude, longitude, osmId, nameRu, timezone, regionIso);
         }
         
+        logger.LogInformation("Returning extracted cities");
         return result;
     }
 }

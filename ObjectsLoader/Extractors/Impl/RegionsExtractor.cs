@@ -19,18 +19,21 @@ public class RegionsExtractor : IExtractor<Region>
         this.logger = logger;
         this.osmClient = osmClient;
         this.translatorClient = translatorClient;
-        logger.LogInformation("{{method=\"regions_extractor_constructor\" status=\"success\" msg=\"Initialized\"}}");
+        logger.LogInformation("RegionsExtractor initialized with osm query: '{Query}'", Query);
     }
     
     public async Task<List<Region>> Extract()
     {
+        logger.LogInformation("Extracting regions, fetching from osm by query");
         var jsonString = await osmClient.Fetch(Query);
         if (jsonString is null)
         {
+            logger.LogInformation("Fetching failed, returning empty list");
             return new List<Region>();
         }
         var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
 
+        logger.LogInformation("Parsing fetched regions");
         var result = new List<Region>();
         foreach (var element in jsonRoot!.Elements)
         {
@@ -53,9 +56,10 @@ public class RegionsExtractor : IExtractor<Region>
                 IsoCode = iso
             };
             result.Add(region);
-            logger.LogInformation("{{method=\"extract\" id=\"{Id}\" osm_id=\"{OsmId}\" name_ru=\"{NameRu}\" iso_code=\"{IsoCode}\" msg=\"Extracted region\"}}", region.Id, osmId, nameRu, iso);
+            logger.LogInformation("Parsed region with id: {Id}, osm id: {OsmId}, russian name: {NameRu}, iso code: {IsoCode}", region.Id, osmId, nameRu, iso);
         }
         
+        logger.LogInformation("Returning extracted regions");
         return result;
     }
 }
