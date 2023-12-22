@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
@@ -6,42 +9,71 @@ using ObjectsLoader.Clients.Impl;
 using ObjectsLoader.Extractors;
 using ObjectsLoader.Extractors.Impl;
 using ObjectsLoader.ExtractorsServices;
+using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.ScheduledService;
 using ObjectsLoader.Services;
 using ObjectsLoader.Services.Impl;
 
-await Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services =>
+
+var builder = Host.CreateApplicationBuilder();
+
+var projectPath = Directory.GetParent(Directory.GetCurrentDirectory())?.Parent?.Parent?.FullName;
+ArgumentNullException.ThrowIfNull(projectPath);
+
+builder.Configuration.SetBasePath(projectPath);
+builder.Configuration.AddJsonFile("Properties/appsettings.json", true, true);
+
+var loggingEnv = builder.Configuration.GetSection("Logging");
+if (loggingEnv.GetChildren().Count() != 2)
+{
+    throw new NullReferenceException("Logging environment variable must have LogLevel and File");
+}
+
+builder.Services.AddLogging(config => {
+    config.AddFile(loggingEnv, options =>
     {
-        services.AddLogging(config =>
+        options.FormatLogEntry = message =>
         {
-            config.AddSimpleConsole(options => options.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ");
-        });
+            var log = new LogJson
+            {
+                Timestamp = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                LogLevel = message.LogLevel.ToString(),
+                LogName = message.LogName,
+                EventId = message.EventId.Id,
+                Message = message.Message,
+                Exception = message.Exception?.ToString()
+            };
+            var serializationOptions = new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+            return JsonSerializer.Serialize(log, serializationOptions);
+        };
+    });
+});
+
+builder.Services.AddSingleton<INominatimClient, NominatimClient>();
+builder.Services.AddSingleton<IOsmClient, OsmClient>();
+builder.Services.AddSingleton<ITranslatorClient, FakeTranslatorClient>();
+builder.Services.AddSingleton<ITimezoneManager, TimezoneManager>();
+builder.Services.AddSingleton<IDistributedCache, DistributedCache>();
+
+// builder.Services.AddSingleton<IExtractor<Country>, CountriesExtractor>();
+// builder.Services.AddSingleton<IExtractor<Region>, RegionsExtractor>();
+// builder.Services.AddSingleton<IExtractor<City>, CitiesExtractor>();
+builder.Services.AddSingleton<IExtractor<Airport>, AirportsExtractor>();
+// builder.Services.AddSingleton<IExtractor<Railway>, RailwaysExtractor>();
         
-        services.AddSingleton<INominatimClient, NominatimClient>();
-        services.AddSingleton<IOsmClient, OsmClient>();
-        services.AddSingleton<ITranslatorClient, TranslatorClient>();
-        services.AddSingleton<ITimezoneManager, TimezoneManager>();
-        services.AddSingleton<IDistributedCache, DistributedCache>();
+// builder.Services.AddSingleton<CountriesService>();
+// builder.Services.AddSingleton<RegionsService>();
+// builder.Services.AddSingleton<CitiesService>();
+builder.Services.AddSingleton<AirportsService>();
+// builder.Services.AddSingleton<RailwaysService>();
         
-        // services.AddSingleton<IExtractor<Country>, CountriesExtractor>();
-        // services.AddSingleton<IExtractor<Region>, RegionsExtractor>();
-        // services.AddSingleton<IExtractor<City>, CitiesExtractor>();
-        services.AddSingleton<IExtractor<Airport>, AirportsExtractor>();
-        // services.AddSingleton<IExtractor<Railway>, RailwaysExtractor>();
-        
-        // services.AddSingleton<CountriesService>();
-        // services.AddSingleton<RegionsService>();
-        // services.AddSingleton<CitiesService>();
-        services.AddSingleton<AirportsService>();
-        // services.AddSingleton<RailwaysService>();
-        
-        // services.AddCronJob<CountriesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-        // services.AddCronJob<RegionsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-        // services.AddCronJob<CitiesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-        services.AddCronJob<AirportsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-        // services.AddCronJob<RailwaysService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-    })
-    .Build()
-    .RunAsync();
+// builder.Services.AddCronJob<CountriesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+// builder.Services.AddCronJob<RegionsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+// builder.Services.AddCronJob<CitiesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+builder.Services.AddCronJob<AirportsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+// builder.Services.AddCronJob<RailwaysService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+
+var app = builder.Build();
+
+app.Run();
