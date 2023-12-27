@@ -15,13 +15,8 @@ using ObjectsLoader.ScheduledService;
 using ObjectsLoader.Services;
 using ObjectsLoader.Services.Impl;
 
+var builder = Host.CreateApplicationBuilder(args);
 
-var builder = Host.CreateApplicationBuilder();
-
-var projectPath = Directory.GetParent(Directory.GetCurrentDirectory())?.Parent?.Parent?.FullName;
-ArgumentNullException.ThrowIfNull(projectPath);
-
-builder.Configuration.SetBasePath(projectPath);
 builder.Configuration.AddJsonFile("Properties/appsettings.json", true, true);
 
 var loggingEnv = builder.Configuration.GetSection("Logging");
