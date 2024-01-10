@@ -1,15 +1,16 @@
-﻿using Geo.Api.Domain.Translations;
+﻿using Geo.Api.Repositories.Translations.Models;
 
 namespace Geo.Api.Repositories.Translations;
 
-internal interface ITranslationsRepository
+internal interface ITranslationsRepository<TTranslationEntity>
+    where TTranslationEntity : TranslationEntity
 {
-    public Task<Translation?> GetAsync(int entityId, string type, string languageId, string value,
+    public Task<TTranslationEntity?> GetAsync(int entityId, string languageId,
         CancellationToken cancellationToken = default);
 
-    public Task<Translation> CreateAsync(int entityId, string type, string languageId, string value,
+    public Task<TTranslationEntity> CreateAsync(int entityId, string languageId, string value,
         CancellationToken cancellationToken = default);
-    
-    public Task<Translation> UpdateAsync(int entityId, string type, string languageId, string value,
+
+    public Task<TTranslationEntity> UpdateAsync(int entityId, string languageId, string value,
         CancellationToken cancellationToken = default);
 }

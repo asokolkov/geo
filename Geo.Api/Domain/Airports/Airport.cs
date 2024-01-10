@@ -4,41 +4,23 @@ namespace Geo.Api.Domain.Airports;
 
 internal sealed class Airport
 {
-    public Airport(int id, int cityId, string name, string iataEn, double latitude, double longitude,
-        string timezone, string osm, DateTimeOffset updatedAt)
+    public Airport(int id, Code code, Name name, Geometry geometry, AirportLocationComponents locationComponents,
+        int utcOffset, string osm)
     {
         Id = id;
-        CityId = cityId;
+        Code = code;
         Name = name;
-        IataEn = iataEn;
-        Latitude = latitude;
-        Longitude = longitude;
-        Timezone = timezone;
+        Geometry = geometry;
+        LocationComponents = locationComponents;
+        UtcOffset = utcOffset;
         Osm = osm;
-        UpdatedAt = updatedAt;
     }
 
     public int Id { get; }
-    
-    public int CityId { get; }
-
-    public string Name { get; }
-
-    public string IataEn { get; }
-
-    public double Latitude { get; }
-
-    public double Longitude { get; }
-
-    public string Timezone { get; }
-    
+    public Code Code { get; }
+    public Name Name { get; }
+    public Geometry Geometry { get; }
+    public AirportLocationComponents LocationComponents { get; }
+    public int UtcOffset { get; }
     public string Osm { get; }
-
-    public DateTimeOffset UpdatedAt { get; }
-
-    public string? IataRu { get; init; }
-
-    public DateTimeOffset? DeletedAt { get; init; }
-
-    public City? City { get; init; }
 }

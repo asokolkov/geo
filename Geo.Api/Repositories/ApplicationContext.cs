@@ -35,7 +35,7 @@ internal sealed class ApplicationContext : DbContext
 
     public DbSet<TranslationLanguageEntity> TranslationLanguages { get; private set; } = null!;
     
-    public DbSet<TranslationEntity> Translations { get; private set; } = null!;
+    public DbSet<AirportTranslationEntity> AirportTranslations { get; private set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,7 +45,7 @@ internal sealed class ApplicationContext : DbContext
         modelBuilder.ApplyConfiguration(new RailwayStationEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new TranslationLanguageEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new TranslationEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AirportTranslationEntityTypeConfiguration());
 
     }
 }

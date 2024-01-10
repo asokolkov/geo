@@ -41,7 +41,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IEntityTypeConfiguration<RailwayStationEntity>, RailwayStationEntityTypeConfiguration>();
         services.AddSingleton<IEntityTypeConfiguration<RegionEntity>, RegionEntityTypeConfiguration>();
         services.AddSingleton<IEntityTypeConfiguration<TranslationLanguageEntity>, TranslationLanguageEntityTypeConfiguration>();
-        services.AddSingleton<IEntityTypeConfiguration<TranslationEntity>, TranslationEntityTypeConfiguration>();
+        services.AddSingleton<IEntityTypeConfiguration<TranslationEntity>, AirportTranslationEntityTypeConfiguration>();
 
         return services;
     }

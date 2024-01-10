@@ -22,7 +22,7 @@ internal sealed class CitiesRepository : ICitiesRepository
         this.mapper = mapper;
     }
 
-    public async Task<City?> GetAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<CityEntity?> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         var entity = await context.Cities
             .AsQueryable()
@@ -30,10 +30,10 @@ internal sealed class CitiesRepository : ICitiesRepository
             .Include(e => e.Country)
             .Include(e => e.Region)
             .FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
-        return mapper.Map<City>(entity);
+        return entity;
     }
 
-    public async Task<City> CreateAsync(int countryId, int? regionId, string name, double latitude, double longitude,
+    public async Task<CityEntity> CreateAsync(int countryId, int? regionId, string name, double latitude, double longitude,
         string timezone, string osm, string? iata, CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
@@ -47,10 +47,10 @@ internal sealed class CitiesRepository : ICitiesRepository
         var entry = await context.AddAsync(cityEntity, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<City>(entry.Entity);
+        return entry.Entity;
     }
 
-    public async Task<City> UpdateAsync(int id, int countryId, int? regionId, string name, double latitude, double longitude,
+    public async Task<CityEntity> UpdateAsync(int id, int countryId, int? regionId, string name, double latitude, double longitude,
         string timezone, string osm, string? iata, CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
@@ -73,6 +73,8 @@ internal sealed class CitiesRepository : ICitiesRepository
         cityEntity.UpdatedAt = now;
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<City>(cityEntity);
+        return cityEntity;
     }
+
+    public IQueryable<CityEntity> Queryable => context.Cities.AsQueryable().AsNoTracking();
 }

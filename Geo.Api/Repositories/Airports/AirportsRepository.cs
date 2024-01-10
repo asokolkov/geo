@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Geo.Api.Domain.Airports;
-using Geo.Api.Repositories.Airports.Models;
+﻿using Geo.Api.Repositories.Airports.Models;
 using Geo.Api.Repositories.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Internal;
@@ -12,45 +10,54 @@ internal sealed class AirportsRepository : IAirportsRepository
     private readonly ILogger logger;
     private readonly ApplicationContext context;
     private readonly ISystemClock systemClock;
-    private readonly IMapper mapper;
 
-    public AirportsRepository(ILogger<AirportsRepository> logger, ApplicationContext context, ISystemClock systemClock,
-        IMapper mapper)
+
+    public AirportsRepository(ILogger<AirportsRepository> logger, ApplicationContext context, ISystemClock systemClock)
     {
         this.logger = logger;
         this.context = context;
         this.systemClock = systemClock;
-        this.mapper = mapper;
     }
 
-    public async Task<Airport?> GetAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<AirportEntity?> GetAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await context.Airports
+        return await context.Airports
             .AsQueryable()
             .AsNoTracking()
             .Include(e => e.City)
             .FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
-        return mapper.Map<Airport>(entity);
     }
 
-    public async Task<Airport> CreateAsync(int cityId, string name, string iataEn, string? iataRu, double latitude,
-        double longitude, string timezone, string osm, CancellationToken cancellationToken = default)
+    public async Task<AirportEntity?> GetAsync(string iata, CancellationToken cancellationToken = default)
+    {
+        return await context.Airports
+            .AsQueryable()
+            .AsNoTracking()
+            .Include(e => e.City)
+            .FirstOrDefaultAsync(country => country.IataEn == iata || country.IataRu == iata, cancellationToken);
+    }
+
+    public async Task<AirportEntity> CreateAsync(int cityId, string name, string iataEn, string? iataRu,
+        double latitude, double longitude, int utcOffset, string osm, bool needAutomaticUpdate = true,
+        CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
         var airportEntity =
-            new AirportEntity(0, cityId, name, iataEn, latitude, longitude, timezone, osm, now)
+            new AirportEntity(0, cityId, name, iataEn, latitude, longitude, utcOffset, osm, now)
             {
-                IataRu = iataRu
+                IataRu = iataRu,
+                NeedAutomaticUpdate = needAutomaticUpdate
             };
 
         var entry = await context.AddAsync(airportEntity, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<Airport>(entry.Entity);
+        return entry.Entity;
     }
 
-    public async Task<Airport> UpdateAsync(int id, int cityId, string name, string iataEn, string? iataRu,
-        double latitude, double longitude, string timezone, string osm, CancellationToken cancellationToken = default)
+    public async Task<AirportEntity> UpdateAsync(int id, int cityId, string name, string iataEn, string? iataRu,
+        double latitude, double longitude, int utcOffset, string osm, bool needAutomaticUpdate = true,
+        CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
         var airportEntity = await context.Airports.FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
@@ -58,20 +65,23 @@ internal sealed class AirportsRepository : IAirportsRepository
         if (airportEntity is null)
         {
             logger.LogWarning("Airport with id '{Id}' not found", id);
-            throw new EntityNotFoundException(typeof(Airport), id);
+            throw new EntityNotFoundException(typeof(AirportEntity), id);
         }
 
         airportEntity.CityId = cityId;
         airportEntity.Name = name;
-        airportEntity.IataEn = name;
+        airportEntity.IataEn = iataEn;
         airportEntity.IataRu = iataRu;
         airportEntity.Latitude = latitude;
         airportEntity.Longitude = longitude;
-        airportEntity.Timezone = timezone;
+        airportEntity.UtcOffset = utcOffset;
         airportEntity.Osm = osm;
         airportEntity.UpdatedAt = now;
+        airportEntity.NeedAutomaticUpdate = needAutomaticUpdate;
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<Airport>(airportEntity);
+        return airportEntity;
     }
+
+    public IQueryable<AirportEntity> Queryable => context.Airports.AsQueryable().AsNoTracking();
 }

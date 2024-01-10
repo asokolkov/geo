@@ -69,6 +69,11 @@ internal sealed class CityEntityTypeConfiguration : IEntityTypeConfiguration<Cit
             .HasForeignKey(e => e.RegionId)
             .IsRequired(false);
         
+        builder.HasMany(e => e.Translations)
+            .WithOne()
+            .HasForeignKey(e => new {Type = "city", e.EntityId})
+            .IsRequired(false);
+        
         builder.HasIndex(e => e.Iata).IsUnique();
         builder.HasIndex(e => e.Osm).IsUnique();
         builder.HasIndex(e => e.RegionId);

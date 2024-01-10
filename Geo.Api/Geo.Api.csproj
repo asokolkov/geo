@@ -22,6 +22,7 @@
     <ItemGroup>
       <Folder Include="Application\Countries\Commands\" />
       <Folder Include="Application\Countries\Queries\GetCountryByIdQuery\" />
+      <Folder Include="V1\Airports\Mapping\" />
     </ItemGroup>
 
 </Project>

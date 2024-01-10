@@ -6,7 +6,7 @@ namespace Geo.Api.Domain.Cities;
 internal sealed class City
 {
     public City(int id, int countryId, string name, double latitude, double longitude,
-        string timezone, string osm, DateTimeOffset updatedAt)
+        string timezone, string osm, DateTimeOffset updatedAt, Country country)
     {
         Id = id;
         CountryId = countryId;
@@ -16,6 +16,7 @@ internal sealed class City
         Timezone = timezone;
         Osm = osm;
         UpdatedAt = updatedAt;
+        Country = country;
     }
 
     public int Id { get; }
@@ -42,5 +43,5 @@ internal sealed class City
 
     public Region? Region { get;init; }
 
-    public Country? Country { get; init; }
+    public Country Country { get; init; }
 }

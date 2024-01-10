@@ -1,5 +1,6 @@
 ﻿using Geo.Api.Repositories.Countries.Models;
 using Geo.Api.Repositories.Regions.Models;
+using Geo.Api.Repositories.Translations.Models;
 
 namespace Geo.Api.Repositories.Cities.Models;
 
@@ -49,4 +50,6 @@ internal sealed class CityEntity
     public CountryEntity? Country { get; set; }
 
     public RegionEntity? Region { get; set; }
+    
+    public List<TranslationEntity>? Translations { get; init; }
 }

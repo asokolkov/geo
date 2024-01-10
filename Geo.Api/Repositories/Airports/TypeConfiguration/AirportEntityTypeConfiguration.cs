@@ -41,9 +41,8 @@ internal sealed class AirportEntityTypeConfiguration : IEntityTypeConfiguration<
             .HasColumnName("longitude")
             .IsRequired();
         
-        builder.Property(e => e.Timezone)
-            .HasColumnName("timezone")
-            .HasMaxLength(6)
+        builder.Property(e => e.UtcOffset)
+            .HasColumnName("utcOffset")
             .IsRequired();
         
         builder.Property(e => e.Osm)
@@ -60,11 +59,20 @@ internal sealed class AirportEntityTypeConfiguration : IEntityTypeConfiguration<
             .HasDefaultValue(null)
             .IsRequired(false);
 
+        builder.Property(e => e.NeedAutomaticUpdate)
+            .HasColumnName("need_automatic_update")
+            .HasDefaultValue(true)
+            .IsRequired(false);
+
 
         builder.HasOne(e => e.City)
             .WithMany()
             .HasForeignKey(e => e.CityId)
             .IsRequired();
+
+        builder.HasMany(e => e.Translations)
+            .WithOne()
+            .HasForeignKey(e => new { Type = "airport", e.EntityId });
 
         builder.HasIndex(e => e.CityId);
         builder.HasIndex(e => e.IataEn).IsUnique();

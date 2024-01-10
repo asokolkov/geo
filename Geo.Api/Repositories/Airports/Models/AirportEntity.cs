@@ -1,11 +1,12 @@
 ﻿using Geo.Api.Repositories.Cities.Models;
+using Geo.Api.Repositories.Translations.Models;
 
 namespace Geo.Api.Repositories.Airports.Models;
 
 internal sealed class AirportEntity
 {
     public AirportEntity(int id, int cityId, string name, string iataEn, double latitude, double longitude,
-        string timezone, string osm, DateTimeOffset updatedAt)
+        int utcOffset, string osm, DateTimeOffset updatedAt)
     {
         Id = id;
         CityId = cityId;
@@ -13,7 +14,7 @@ internal sealed class AirportEntity
         IataEn = iataEn;
         Latitude = latitude;
         Longitude = longitude;
-        Timezone = timezone;
+        UtcOffset = utcOffset;
         Osm = osm;
         UpdatedAt = updatedAt;
     }
@@ -36,7 +37,7 @@ internal sealed class AirportEntity
 
     public double Longitude { get; set; }
 
-    public string Timezone { get; set; }
+    public int UtcOffset { get; set; }
 
     public string Osm { get; set; }
 
@@ -45,6 +46,10 @@ internal sealed class AirportEntity
     public string? IataRu { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
+    
+    public bool NeedAutomaticUpdate { get; set; }
 
     public CityEntity? City { get; init; }
+
+    public List<TranslationEntity> Translations { get; init; } = new();
 }

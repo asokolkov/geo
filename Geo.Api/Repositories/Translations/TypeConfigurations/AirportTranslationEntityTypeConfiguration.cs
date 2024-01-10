@@ -4,18 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Geo.Api.Repositories.Translations.TypeConfigurations;
 
-internal sealed class TranslationEntityTypeConfiguration : IEntityTypeConfiguration<TranslationEntity>
+internal sealed class AirportTranslationEntityTypeConfiguration : IEntityTypeConfiguration<TranslationEntity>
 {
     public void Configure(EntityTypeBuilder<TranslationEntity> builder)
     {
         builder.ToTable("translations");
         
-        builder.HasKey(e => new { e.Type, e.EntityId, e.LanguageId });
-
-        builder.Property(e => e.Type)
-            .HasColumnName("type")
-            .HasMaxLength(255)
-            .IsRequired();
+        builder.HasKey(e => new { e.EntityId, LanguageIso639 = e.LanguageId });
 
         builder.Property(e => e.EntityId)
             .HasColumnName("entity_id")
@@ -26,7 +21,7 @@ internal sealed class TranslationEntityTypeConfiguration : IEntityTypeConfigurat
             .HasMaxLength(2)
             .IsRequired();
 
-        builder.Property(e => e.Value)
+        builder.Property(e => e.Translation)
             .HasColumnName("translation")
             .HasMaxLength(255)
             .IsRequired();
@@ -35,7 +30,6 @@ internal sealed class TranslationEntityTypeConfiguration : IEntityTypeConfigurat
             .HasColumnName("last_updated_at")
             .IsRequired();
         
-        builder.HasIndex(e => e.Value);
-        
+        builder.HasIndex(e => e.Translation);
     }
 }
