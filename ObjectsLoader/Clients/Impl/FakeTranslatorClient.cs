@@ -2,16 +2,19 @@
 
 namespace ObjectsLoader.Clients.Impl;
 
-public class FakeTranslatorClient : ClientBase, ITranslatorClient
+public class FakeTranslatorClient : ITranslatorClient
 {
-    public FakeTranslatorClient(ILogger<FakeTranslatorClient> logger) : base(logger)
+    private readonly ILogger<FakeTranslatorClient> logger;
+    
+    public FakeTranslatorClient(ILogger<FakeTranslatorClient> logger)
     {
-        Logger.LogError("FakeTranslatorClient initialized");
+        this.logger = logger;
+        this.logger.LogError("FakeTranslatorClient initialized");
     }
     
     public Task<string?> Fetch(string text, string target, string? source = null)
     {
-        Logger.LogWarning("Sending query from fake translator, returning text: {Text} without translation", text);
+        logger.LogWarning("Sending query from fake translator, returning text: {Text} without translation", text);
         return Task.FromResult(text);
     }
 }

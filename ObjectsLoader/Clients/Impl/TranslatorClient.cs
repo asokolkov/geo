@@ -4,45 +4,60 @@ using ObjectsLoader.Services;
 
 namespace ObjectsLoader.Clients.Impl;
 
-public class TranslatorClient : ClientBase, ITranslatorClient
+public class TranslatorClient : ITranslatorClient
 {
     private const string Url = "https://localhost:7001/translate?text={0}&target={1}&source={2}";
+    private readonly ILogger<TranslatorClient> logger;
     private readonly IDistributedCache cache;
+    private readonly HttpClient client = new();
 
-    public TranslatorClient(ILogger<TranslatorClient> logger, IDistributedCache cache) : base(logger)
+    public TranslatorClient(ILogger<TranslatorClient> logger, IDistributedCache cache)
     {
+        this.logger = logger;
         this.cache = cache;
-        Logger.LogInformation("TranslatorClient initialized with url: '{Url}'", Url);
+        this.logger.LogInformation("TranslatorClient initialized with url: '{Url}'", Url);
     }
 
     public async Task<string?> Fetch(string text, string target, string? source = null)
     {
-        Logger.LogInformation("Translating text: '{Text}' with target language: {Target} and source language: {Source}", text, target, source);
+        logger.LogInformation("Translating text: '{Text}' with target language: {Target} and source language: {Source}", text, target, source);
         
-        Logger.LogInformation("Trying to find translation in cache");
+        logger.LogInformation("Trying to find translation in cache");
         var key = $"{target}|{text}";
         var translation = await cache.GetAsync(key);
         if (translation is not null)
         {
-            Logger.LogInformation("Returning found in cache translation: {Translation}", translation);
+            logger.LogInformation("Returning found in cache translation: {Translation}", translation);
             return translation;
         }
         
-        Logger.LogInformation("Translation not found in cache, sending request");
+        logger.LogInformation("Translation not found in cache, sending request");
         var query = string.Format(Url, text, target, source);
-        var response = await SendRequest(query);
+
+        HttpResponseMessage? response;
+        try
+        {
+            response = await client.GetAsync(query);
+            logger.LogInformation("Request sent without exceptions, returning response");
+        }
+        catch (HttpRequestException _)
+        {
+            logger.LogInformation("Got exception on request with query: '{Query}', returning null", query);
+            response = null;
+        }
+        
         if (response is null)
         {
-            Logger.LogInformation("Failed to send request, returning null");
+            logger.LogInformation("Failed to send request, returning null");
             return null;
         }
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            Logger.LogInformation("Response status code is not 200, returning null");
+            logger.LogInformation("Response status code is not 200, returning null");
             return null;
         }
         
-        Logger.LogInformation("Response status code is 200, saving response content to cache and returning it");
+        logger.LogInformation("Response status code is 200, saving response content to cache and returning it");
         var stringResponse = await response.Content.ReadAsStringAsync();
         await cache.SetAsync(key, stringResponse);
         return stringResponse;
