@@ -6,7 +6,7 @@ public class FakeTranslatorClient : ClientBase, ITranslatorClient
 {
     public FakeTranslatorClient(ILogger<FakeTranslatorClient> logger) : base(logger)
     {
-        Logger.LogWarning("FakeTranslatorClient initialized");
+        Logger.LogError("FakeTranslatorClient initialized");
     }
     
     public Task<string?> Fetch(string text, string target, string? source = null)
