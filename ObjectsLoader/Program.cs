@@ -56,6 +56,7 @@ builder.Services.AddSingleton<IDistributedCache, DistributedCache>();
 // builder.Services.AddSingleton<IExtractor<City>, CitiesExtractor>();
 builder.Services.AddSingleton<IExtractor<Airport>, AirportsExtractor>();
 // builder.Services.AddSingleton<IExtractor<Railway>, RailwaysExtractor>();
+// builder.Services.AddSingleton<IExtractor<Metro>, MetroExtractor>();
         
 // builder.Services.AddSingleton<CountriesService>();
 // builder.Services.AddSingleton<RegionsService>();
