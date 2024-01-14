@@ -87,18 +87,17 @@ public class AirportsExtractor : IExtractor<Airport>
 
             var airport = new Airport
             {
-                Id = Guid.NewGuid(),
-                OsmId = osmId,
+                Osm = osmId,
                 Latitude = latitude,
                 Longitude = longitude,
-                NameRu = nameRu,
+                Name = nameRu,
                 IataEn = iataEn,
                 IataRu = iataRu,
                 Timezone = timezone,
-                CityOsmId = (int)cityOsmId
+                // CityOsmId = (int)cityOsmId
             };
             result.Add(airport);
-            logger.LogInformation("Parsed airport with id: {Id}, osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, english iata code: {IataEn}, russian iata code: {IataRu}, timezone: {Timezone}, city osm id: {CityOsmId}", airport.Id, osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone, airport.CityOsmId);
+            logger.LogInformation("Parsed airport with osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, english iata code: {IataEn}, russian iata code: {IataRu}, timezone: {Timezone}", osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone);
         }
         
         logger.LogInformation("Returning extracted airports");

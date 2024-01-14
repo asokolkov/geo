@@ -38,7 +38,6 @@ public class RegionsExtractor : IExtractor<Region>
         foreach (var element in jsonRoot!.Elements)
         {
             var osmId = element.OsmId;
-            var iso = element.Tags["ISO3166-2"];
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
@@ -50,13 +49,11 @@ public class RegionsExtractor : IExtractor<Region>
 
             var region = new Region
             {
-                Id = Guid.NewGuid(),
-                OsmId = osmId,
-                NameRu = nameRu,
-                IsoCode = iso
+                Osm = osmId,
+                Name = nameRu
             };
             result.Add(region);
-            logger.LogInformation("Parsed region with id: {Id}, osm id: {OsmId}, russian name: {NameRu}, iso code: {IsoCode}", region.Id, osmId, nameRu, iso);
+            logger.LogInformation("Parsed region with osm id: {OsmId}, russian name: {NameRu}", osmId, nameRu);
         }
         
         logger.LogInformation("Returning extracted regions");

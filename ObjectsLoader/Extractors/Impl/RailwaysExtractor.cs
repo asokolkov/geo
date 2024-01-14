@@ -88,18 +88,17 @@ public class RailwaysExtractor : IExtractor<Railway>
 
             var railway = new Railway
             {
-                Id = Guid.NewGuid(),
-                OsmId = osmId,
+                Osm = osmId,
                 Latitude = latitude,
                 Longitude = longitude,
-                NameRu = nameRu,
+                Name = nameRu,
                 IsMain = isMain,
-                Rzd = uic ?? "",
+                Express3Code = uic ?? "",
                 Timezone = timezone,
-                CityOsmId = (int)cityOsmId
+                // CityOsmId = (int)cityOsmId
             };
             result.Add(railway);
-            logger.LogInformation("Parsed railway with id: {Id}, osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, station main: {IsMain}, rzd: {Rzd}, timezone: {Timezone}, city osm id: {CityOsmId}", railway.Id, osmId, latitude, longitude, nameRu, isMain, railway.Rzd, timezone, railway.CityOsmId);
+            logger.LogInformation("Parsed railway with osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, station main: {IsMain}, rzd: {Rzd}, timezone: {Timezone}", osmId, latitude, longitude, nameRu, isMain, railway.Express3Code, timezone);
         }
         
         logger.LogInformation("Returning extracted railways");

@@ -52,16 +52,15 @@ public class CountriesExtractor : IExtractor<Country>
 
             var country = new Country
             {
-                Id = Guid.NewGuid(),
-                OsmId = osmId,
-                Iso2 = iso2,
-                Iso3 = iso3,
-                NameRu = nameRu,
+                Osm = osmId,
+                Iso3116Alpha2 = iso2,
+                Iso3116Alpha3 = iso3,
+                Name = nameRu,
                 PhoneCode = CountriesPhones.Codes[iso2],
                 PhoneMask = CountriesPhones.Masks[iso2]
             };
             result.Add(country);
-            logger.LogInformation("Parsed country with id: {Id}, osm id: {OsmId}, iso code 2: {Iso2}, iso code 3: {Iso3}, russian name: {NameRu}, phone code: {PhoneCode}, phone mask: {PhoneMask}", country.Id, osmId, iso2, iso3, nameRu, country.PhoneCode, country.PhoneMask);
+            logger.LogInformation("Parsed country with osm id: {OsmId}, iso code 2: {Iso2}, iso code 3: {Iso3}, russian name: {NameRu}, phone code: {PhoneCode}, phone mask: {PhoneMask}", osmId, iso2, iso3, nameRu, country.PhoneCode, country.PhoneMask);
         }
         
         logger.LogInformation("Returning extracted countries");

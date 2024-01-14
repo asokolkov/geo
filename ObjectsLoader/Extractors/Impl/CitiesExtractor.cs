@@ -73,16 +73,15 @@ public class CitiesExtractor : IExtractor<City>
 
             var city = new City
             {
-                Id = Guid.NewGuid(),
                 Latitude = latitude,
                 Longitude = longitude,
-                OsmId = osmId,
-                NameRu = nameRu,
+                Osm = osmId,
+                Name = nameRu,
                 Timezone = timezone,
-                RegionIsoCode = regionIso
+                Iata = regionIso
             };
             result.Add(city);
-            logger.LogInformation("Parsed city with id: {Id}, latitude: {Lat}, longitude: {Lon}, osm id: {OsmId}, russian name: {NameRu}, timezone: {Timezone}, region iso code: {IsoCode}", city.Id, latitude, longitude, osmId, nameRu, timezone, regionIso);
+            logger.LogInformation("Parsed city with latitude: {Lat}, longitude: {Lon}, osm id: {OsmId}, russian name: {NameRu}, timezone: {Timezone}, region iso code: {IsoCode}", latitude, longitude, osmId, nameRu, timezone, regionIso);
         }
         
         logger.LogInformation("Returning extracted cities");
