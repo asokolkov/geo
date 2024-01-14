@@ -69,6 +69,7 @@ builder.Services.AddSingleton<AirportsService>();
 // builder.Services.AddCronJob<CitiesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
 builder.Services.AddCronJob<AirportsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
 // builder.Services.AddCronJob<RailwaysService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+// builder.Services.AddCronJob<MetroService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
 
 var app = builder.Build();
 
