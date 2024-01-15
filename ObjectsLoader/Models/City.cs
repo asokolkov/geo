@@ -2,10 +2,11 @@
 
 public sealed class City
 {
-    public required string Name { get; init; }
-    public required string Iata { get; init; }
+    public required string NameRu { get; init; }
+    public required string NameEn { get; init; }
+    public required string RegionIsoCode { get; init; }
     public double Latitude { get; init; }
     public double Longitude { get; init; }
-    public required string Timezone { get; init; }
-    public int Osm { get; init; }
+    public int? UtcOffset { get; init; }
+    public required string Osm { get; init; }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
@@ -9,7 +10,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class CountriesExtractor : IExtractor<Country>
 {
-    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1\"][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 1;";
+    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 100;";
     
     private readonly ILogger<CountriesExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -55,7 +56,8 @@ public class CountriesExtractor : IExtractor<Country>
                 Osm = osmId,
                 Iso3116Alpha2 = iso2,
                 Iso3116Alpha3 = iso3,
-                Name = nameRu,
+                NameEn = name,
+                NameRu = nameRu,
                 PhoneCode = CountriesPhones.Codes[iso2],
                 PhoneMask = CountriesPhones.Masks[iso2]
             };

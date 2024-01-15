@@ -9,7 +9,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class AirportsExtractor : IExtractor<Airport>
 {
-    private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center 1;";
+    private const string Query = "[out:json];nwr[aeroway=aerodrome][iata][name];out center 5;";
     
     private readonly ILogger<AirportsExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -58,9 +58,9 @@ public class AirportsExtractor : IExtractor<Airport>
                 continue;
             }
 
-            var timezone = jsonTimezone is null 
-                ? timezoneManager.GetUtcTimezone(latitude, longitude)
-                : timezoneManager.GetUtcTimezone(jsonTimezone);
+            var utcOffset = jsonTimezone is null 
+                ? timezoneManager.GetUtcOffset(latitude, longitude)
+                : timezoneManager.GetUtcOffset(jsonTimezone);
 
             var city = jsonCity;
             if (city is null)
@@ -90,14 +90,14 @@ public class AirportsExtractor : IExtractor<Airport>
                 Osm = osmId,
                 Latitude = latitude,
                 Longitude = longitude,
-                Name = nameRu,
+                NameEn = name,
+                NameRu = nameRu,
                 IataEn = iataEn,
                 IataRu = iataRu,
-                Timezone = timezone,
-                // CityOsmId = (int)cityOsmId
+                UtcOffset = utcOffset,
+                CityOsmId = cityOsmId
             };
             result.Add(airport);
-            logger.LogInformation("Parsed airport with osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, english iata code: {IataEn}, russian iata code: {IataRu}, timezone: {Timezone}", osmId, latitude, longitude, nameRu, iataEn, iataRu, timezone);
         }
         
         logger.LogInformation("Returning extracted airports");

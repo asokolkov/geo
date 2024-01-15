@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
@@ -8,7 +9,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class RegionsExtractor : IExtractor<Region>
 {
-    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 1;";
+    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 100;";
     
     private readonly ILogger<RegionsExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -31,7 +32,10 @@ public class RegionsExtractor : IExtractor<Region>
             logger.LogInformation("Fetching failed, returning empty list");
             return new List<Region>();
         }
-        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
+        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString, new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowReadingFromString
+        });
 
         logger.LogInformation("Parsing fetched regions");
         var result = new List<Region>();
@@ -39,7 +43,13 @@ public class RegionsExtractor : IExtractor<Region>
         {
             var osmId = element.OsmId;
             var name = element.Tags["name"];
+            element.Tags.TryGetValue("ISO3166-2", out var isoCode); 
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+
+            if (isoCode is null)
+            {
+                continue;
+            }
             
             var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
             if (nameRu is null)
@@ -50,7 +60,10 @@ public class RegionsExtractor : IExtractor<Region>
             var region = new Region
             {
                 Osm = osmId,
-                Name = nameRu
+                NameEn = name,
+                NameRu = nameRu,
+                CountryIso2Code = isoCode.Split("-").First(),
+                Iso = isoCode
             };
             result.Add(region);
             logger.LogInformation("Parsed region with osm id: {OsmId}, russian name: {NameRu}", osmId, nameRu);

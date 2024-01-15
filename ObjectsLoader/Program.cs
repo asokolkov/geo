@@ -8,7 +8,6 @@ using ObjectsLoader.Clients;
 using ObjectsLoader.Clients.Impl;
 using ObjectsLoader.Extractors;
 using ObjectsLoader.Extractors.Impl;
-using ObjectsLoader.ExtractorsServices;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
 using ObjectsLoader.ScheduledService;
@@ -50,26 +49,17 @@ builder.Services.AddSingleton<IOsmClient, OsmClient>();
 builder.Services.AddSingleton<ITranslatorClient, FakeTranslatorClient>();
 builder.Services.AddSingleton<ITimezoneManager, TimezoneManager>();
 builder.Services.AddSingleton<IDistributedCache, DistributedCache>();
+builder.Services.AddSingleton<ISenderClient, FakeSenderClient>();
 
-// builder.Services.AddSingleton<IExtractor<Country>, CountriesExtractor>();
-// builder.Services.AddSingleton<IExtractor<Region>, RegionsExtractor>();
-// builder.Services.AddSingleton<IExtractor<City>, CitiesExtractor>();
+builder.Services.AddSingleton<IExtractor<Country>, CountriesExtractor>();
+builder.Services.AddSingleton<IExtractor<Region>, RegionsExtractor>();
+builder.Services.AddSingleton<IExtractor<City>, CitiesExtractor>();
 builder.Services.AddSingleton<IExtractor<Airport>, AirportsExtractor>();
-// builder.Services.AddSingleton<IExtractor<Railway>, RailwaysExtractor>();
-// builder.Services.AddSingleton<IExtractor<Metro>, MetroExtractor>();
+builder.Services.AddSingleton<IExtractor<Railway>, RailwaysExtractor>();
+builder.Services.AddSingleton<IExtractor<Metro>, MetroExtractor>();
         
-// builder.Services.AddSingleton<CountriesService>();
-// builder.Services.AddSingleton<RegionsService>();
-// builder.Services.AddSingleton<CitiesService>();
-builder.Services.AddSingleton<AirportsService>();
-// builder.Services.AddSingleton<RailwaysService>();
-        
-// builder.Services.AddCronJob<CountriesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-// builder.Services.AddCronJob<RegionsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-// builder.Services.AddCronJob<CitiesService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-builder.Services.AddCronJob<AirportsService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-// builder.Services.AddCronJob<RailwaysService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
-// builder.Services.AddCronJob<MetroService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
+builder.Services.AddSingleton<ScheduleService>();
+builder.Services.AddCronJob<ScheduleService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
 
 var app = builder.Build();
 

@@ -2,7 +2,8 @@
 
 namespace ObjectsLoader.JsonModels;
 
-internal sealed class NominatimJsonElement
+public sealed class NominatimJsonElement
 {
+    [JsonPropertyName("ISO3166-2-lvl4")] public string? RegionIsoCode { get; init; }
     [JsonPropertyName("address")] public required Dictionary<string, string> Address { get; init; }
 }

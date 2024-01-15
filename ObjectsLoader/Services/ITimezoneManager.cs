@@ -2,6 +2,6 @@
 
 public interface ITimezoneManager
 {
-    public string GetUtcTimezone(double latitude, double longitude);
-    public string GetUtcTimezone(string unknownTimezone);
+    public int? GetUtcOffset(double latitude, double longitude);
+    public int? GetUtcOffset(string unknownTimezone);
 }

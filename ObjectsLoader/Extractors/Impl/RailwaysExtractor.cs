@@ -9,7 +9,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class RailwaysExtractor : IExtractor<Railway>
 {
-    private const string Query = "[out:json];nwr[building=train_station][name];out center 1;";
+    private const string Query = "[out:json];nwr[building=train_station][name];out center 5;";
     
     private readonly ILogger<RailwaysExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -57,9 +57,9 @@ public class RailwaysExtractor : IExtractor<Railway>
                 continue;
             }
 
-            var timezone = jsonTimezone is null 
-                ? timezoneManager.GetUtcTimezone(latitude, longitude)
-                : timezoneManager.GetUtcTimezone(jsonTimezone);
+            var utcOffset = jsonTimezone is null 
+                ? timezoneManager.GetUtcOffset(latitude, longitude)
+                : timezoneManager.GetUtcOffset(jsonTimezone);
 
             var isMain = jsonCity is not null;
             
@@ -80,7 +80,7 @@ public class RailwaysExtractor : IExtractor<Railway>
                 continue;
             }
             var osmJsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
-            var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId;
+            var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId.ToString();
             if (cityOsmId is null)
             {
                 continue;
@@ -91,14 +91,14 @@ public class RailwaysExtractor : IExtractor<Railway>
                 Osm = osmId,
                 Latitude = latitude,
                 Longitude = longitude,
-                Name = nameRu,
+                NameEn = name,
+                NameRu = nameRu,
                 IsMain = isMain,
                 Express3Code = uic ?? "",
-                Timezone = timezone,
-                // CityOsmId = (int)cityOsmId
+                UtcOffset = utcOffset,
+                CityOsmId = cityOsmId
             };
             result.Add(railway);
-            logger.LogInformation("Parsed railway with osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, russian name: {NameRu}, station main: {IsMain}, rzd: {Rzd}, timezone: {Timezone}", osmId, latitude, longitude, nameRu, isMain, railway.Express3Code, timezone);
         }
         
         logger.LogInformation("Returning extracted railways");

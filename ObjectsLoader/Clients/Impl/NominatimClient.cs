@@ -8,7 +8,6 @@ namespace ObjectsLoader.Clients.Impl;
 
 public class NominatimClient : INominatimClient
 {
-    private const string Url = "https://nominatim.openstreetmap.org/reverse?format=json&lat={0}&lon={1}";
     private readonly ILogger<NominatimClient> logger;
     private readonly HttpClient client = new();
     
@@ -16,7 +15,7 @@ public class NominatimClient : INominatimClient
     {
         this.logger = logger;
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
-        this.logger.LogInformation("NominatimClient initialized with url: '{Url}'", Url);
+        this.logger.LogInformation("NominatimClient initialized");
     }
     
     public async Task<string?> Fetch(string key, double latitude, double longitude)
@@ -25,7 +24,7 @@ public class NominatimClient : INominatimClient
         
         var stringLatitude = latitude.ToString(CultureInfo.InvariantCulture);
         var stringLongitude = longitude.ToString(CultureInfo.InvariantCulture);
-        var query = string.Format(Url, stringLatitude, stringLongitude);
+        var query = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={stringLatitude}&lon={stringLongitude}";
         
         logger.LogInformation("Nominatim query: '{Query}' built, sending request", query);
         
@@ -65,5 +64,32 @@ public class NominatimClient : INominatimClient
         
         logger.LogInformation("Can't find key: {Key} in response data, returning null", key);
         return null;
+    }
+
+    public async Task<string?> Fetch(string query)
+    {
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.GetAsync(query);
+        }
+        catch (HttpRequestException _)
+        {
+            return null;
+        }
+        
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+        
+        var stringResponse = await response.Content.ReadAsStringAsync();
+        var jsonElement = JsonSerializer.Deserialize<List<NominatimJsonElement>>(stringResponse);
+        if (jsonElement is null)
+        {
+            return null;
+        }
+        jsonElement[0].Address.TryGetValue("country_code", out var result);
+        return result?.ToUpper();
     }
 }

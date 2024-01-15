@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using ObjectsLoader.Clients;
 using ObjectsLoader.JsonModels;
@@ -9,19 +10,17 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class CitiesExtractor : IExtractor<City>
 {
-    private const string Query = "[out:json];nwr[place=city][name];out 1;";
+    private const string Query = "[out:json];nwr[place=city][name][\"is_in:iso_3166_2\"];out;";
     
     private readonly ILogger<CitiesExtractor> logger;
     private readonly IOsmClient osmClient;
-    private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
     private readonly ITimezoneManager timezoneManager;
 
-    public CitiesExtractor(ILogger<CitiesExtractor> logger, IOsmClient osmClient, INominatimClient nominatimClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
+    public CitiesExtractor(ILogger<CitiesExtractor> logger, IOsmClient osmClient, ITranslatorClient translatorClient, ITimezoneManager timezoneManager)
     {
         this.logger = logger;
         this.osmClient = osmClient;
-        this.nominatimClient = nominatimClient;
         this.translatorClient = translatorClient;
         this.timezoneManager = timezoneManager;
         logger.LogInformation("CitiesExtractor initialized with osm query: '{Query}'", Query);
@@ -36,7 +35,10 @@ public class CitiesExtractor : IExtractor<City>
             logger.LogInformation("Fetching failed, returning empty list");
             return new List<City>();
         }
-        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
+        var jsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString, new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowReadingFromString
+        });
         
         logger.LogInformation("Parsing fetched cities");
         var result = new List<City>();
@@ -46,8 +48,8 @@ public class CitiesExtractor : IExtractor<City>
             var latitude = element.Latitude;
             var longitude = element.Longitude;
             var name = element.Tags["name"];
+            var regionIso = element.Tags["is_in:iso_3166_2"];
             element.Tags.TryGetValue("timezone", out var jsonTimezone);
-            element.Tags.TryGetValue("is_in:iso_3166_2", out var jsonRegionIso);
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
             
             var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
@@ -56,32 +58,21 @@ public class CitiesExtractor : IExtractor<City>
                 continue;
             }
             
-            var timezone = jsonTimezone is null 
-                ? timezoneManager.GetUtcTimezone(latitude, longitude)
-                : timezoneManager.GetUtcTimezone(jsonTimezone);
-            
-            var regionIso = jsonRegionIso;
-            if (regionIso is null)
-            {
-                var isoCode = await nominatimClient.Fetch("ISO3166-2-lvl4", latitude, longitude);
-                if (isoCode is null)
-                {
-                    continue;
-                }
-                regionIso = isoCode;
-            }
+            var utcOffset = jsonTimezone is null 
+                ? timezoneManager.GetUtcOffset(latitude, longitude)
+                : timezoneManager.GetUtcOffset(jsonTimezone);
 
             var city = new City
             {
                 Latitude = latitude,
                 Longitude = longitude,
                 Osm = osmId,
-                Name = nameRu,
-                Timezone = timezone,
-                Iata = regionIso
+                NameRu = nameRu,
+                NameEn = name,
+                UtcOffset = utcOffset,
+                RegionIsoCode = regionIso
             };
             result.Add(city);
-            logger.LogInformation("Parsed city with latitude: {Lat}, longitude: {Lon}, osm id: {OsmId}, russian name: {NameRu}, timezone: {Timezone}, region iso code: {IsoCode}", latitude, longitude, osmId, nameRu, timezone, regionIso);
         }
         
         logger.LogInformation("Returning extracted cities");

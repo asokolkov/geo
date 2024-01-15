@@ -8,14 +8,16 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class MetroExtractor : IExtractor<Metro>
 {
-    private const string Query = "[out:json];nwr[station=subway][name][line];out center 1;";
+    private const string Query = "[out:json];nwr[station=subway][name][line];out center 5;";
     
     private readonly ILogger<MetroExtractor> logger;
     private readonly IOsmClient osmClient;
+    private readonly INominatimClient nominatimClient;
     private readonly ITranslatorClient translatorClient;
     
-    public MetroExtractor(ILogger<MetroExtractor> logger, IOsmClient osmClient, ITranslatorClient translatorClient)
+    public MetroExtractor(ILogger<MetroExtractor> logger, INominatimClient nominatimClient, IOsmClient osmClient, ITranslatorClient translatorClient)
     {
+        this.nominatimClient = nominatimClient;
         this.logger = logger;
         this.osmClient = osmClient;
         this.translatorClient = translatorClient;
@@ -55,15 +57,35 @@ public class MetroExtractor : IExtractor<Metro>
             {
                 continue;
             }
+            
+            var city = await nominatimClient.Fetch("country_code", latitude, longitude);
+            if (city is null)
+            {
+                continue;
+            }
+            
+            var osmJson = await osmClient.Fetch($"[out:json];nwr[name=\"{city}\"];out center 1;");
+            if (osmJson is null)
+            {
+                continue;
+            }
+            var osmJsonRoot = JsonSerializer.Deserialize<OsmJsonRoot>(jsonString);
+            var cityOsmId = osmJsonRoot!.Elements.FirstOrDefault()?.OsmId.ToString();
+            if (cityOsmId is null)
+            {
+                continue;
+            }
 
             var metro = new Metro
             {
                 Osm = osmId,
                 Latitude = latitude,
                 Longitude = longitude,
-                StationName = nameRu,
+                StationNameEn = name,
+                StationNameRu = nameRu,
                 LineNameEn = line,
-                LineNameRu = lineRu
+                LineNameRu = lineRu,
+                CityOsmId = cityOsmId
             };
             result.Add(metro);
             logger.LogInformation("Parsed metro station with osm id: {OsmId}, latitude: {Lat}, longitude: {Lon}, station name: {NameRu}, line: {Line}, translated line: {LineRu}", osmId, latitude, longitude, nameRu, line, lineRu);
