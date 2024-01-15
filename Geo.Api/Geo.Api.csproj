@@ -5,6 +5,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <UserSecretsId>ccbff7c4-ff40-4c6c-9b90-1a7eacf9d6db</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,12 +18,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Application\Countries\Commands\" />
-      <Folder Include="Application\Countries\Queries\GetCountryByIdQuery\" />
-      <Folder Include="V1\Airports\Mapping\" />
+      <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
 </Project>

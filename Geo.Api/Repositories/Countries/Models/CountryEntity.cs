@@ -1,9 +1,9 @@
 ﻿namespace Geo.Api.Repositories.Countries.Models;
 
-internal sealed class CountryEntity
+public sealed class CountryEntity
 {
-    public CountryEntity(int id, string name, string iso3116Alpha2Code, string iso3166Alpha3Code, string phoneCode,
-        string phoneMask, string osm, DateTimeOffset updatedAt)
+    public CountryEntity(int id, CountryNameEntity name, CountryGeometryEntity geometry, string iso3116Alpha2Code, string iso3166Alpha3Code, string phoneCode,
+        string phoneMask, string osm, bool needAutomaticUpdate, DateTimeOffset updatedAt)
     {
         Id = id;
         Name = name;
@@ -13,6 +13,8 @@ internal sealed class CountryEntity
         PhoneMask = phoneMask;
         Osm = osm;
         UpdatedAt = updatedAt;
+        NeedAutomaticUpdate = needAutomaticUpdate;
+        Geometry = geometry;
     }
     
 #pragma warning disable CS8618
@@ -23,7 +25,7 @@ internal sealed class CountryEntity
 
     public int Id { get; }
 
-    public string Name { get; set; }
+    public CountryNameEntity Name { get; set; }
 
     public string Iso3116Alpha2Code { get; set; }
 
@@ -34,8 +36,12 @@ internal sealed class CountryEntity
     public string PhoneMask { get; set; }
     
     public string Osm { get; set; }
+    
+    public bool NeedAutomaticUpdate { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
+    
+    public CountryGeometryEntity Geometry { get; set; }
 }

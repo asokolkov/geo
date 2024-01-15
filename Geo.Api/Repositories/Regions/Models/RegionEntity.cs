@@ -2,15 +2,16 @@
 
 using Countries.Models;
 
-internal sealed class RegionEntity
+public sealed class RegionEntity
 {
-    public RegionEntity(int id, int countryId, string name, string osm, DateTimeOffset updatedAt)
+    public RegionEntity(int id, int countryId, RegionNameEntity name, string osm, bool needToUpdate, DateTimeOffset updatedAt)
     {
         Id = id;
         CountryId = countryId;
         Name = name;
         Osm = osm;
         UpdatedAt = updatedAt;
+        NeedToUpdate = needToUpdate;
     }
     
 #pragma warning disable CS8618
@@ -23,13 +24,17 @@ internal sealed class RegionEntity
 
     public int CountryId { get; set; }
 
-    public string Name { get; set; }
+    public RegionNameEntity Name { get; set; }
 
     public string Osm { get; set; }
+    
+    public bool NeedToUpdate { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public RegionGeometryEntity Geometry { get; set; } = new();
     
-    public CountryEntity? Country { get; set; }
+    public int? UtcOffset { get; set; }
 }

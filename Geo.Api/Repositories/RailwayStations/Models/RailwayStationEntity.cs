@@ -2,23 +2,21 @@
 
 namespace Geo.Api.Repositories.RailwayStations.Models;
 
-internal sealed class RailwayStationEntity
+public sealed class RailwayStationEntity
 {
-    public RailwayStationEntity(int id, int cityId, int rzdCode, bool isMain, string name, double latitude,
-        double longitude, string timezone, string osm, DateTimeOffset updatedAt)
+    public RailwayStationEntity(int id, int cityId, RailwayStationCodeEntity code, RailwayStationNameEntity name,
+        RailwayStationGeometryEntity geometry, string osm, bool needToUpdate, DateTimeOffset updatedAt)
     {
         Id = id;
         CityId = cityId;
-        RzdCode = rzdCode;
-        IsMain = isMain;
+        Code = code;
         Name = name;
-        Latitude = latitude;
-        Longitude = longitude;
-        Timezone = timezone;
+        Geometry = geometry;
         Osm = osm;
         UpdatedAt = updatedAt;
+        NeedToUpdate = needToUpdate;
     }
-    
+
 #pragma warning disable CS8618
     private RailwayStationEntity()
     {
@@ -29,17 +27,15 @@ internal sealed class RailwayStationEntity
 
     public int CityId { get; set; }
 
-    public int RzdCode { get; set; }
+    public RailwayStationCodeEntity Code { get; set; }
 
-    public bool IsMain { get; set; }
+    public RailwayStationNameEntity Name { get; set; }
 
-    public string Name { get; set; }
+    public RailwayStationGeometryEntity Geometry { get; set; }
 
-    public double Latitude { get; set; }
-
-    public double Longitude { get; set; }
-
-    public string Timezone { get; set; }
+    public int? UtcOffset { get; set; }
+    
+    public bool NeedToUpdate { get; set; }
 
     public string Osm { get; set; }
 

@@ -18,15 +18,21 @@ internal sealed class RegionEntityTypeConfiguration : IEntityTypeConfiguration<R
         builder.Property(e => e.CountryId)
             .HasColumnName("country_id")
             .IsRequired();
-
-        builder.HasOne(e => e.Country)
-            .WithMany()
-            .HasForeignKey(e => e.CountryId);
-
+        
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasColumnType("jsonb")
             .IsRequired();
+        
+        builder.Property(e => e.Geometry)
+            .HasColumnName("geometry")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        
+        builder.Property(e => e.UtcOffset)
+            .HasColumnName("utc_offset")
+            .IsRequired(false)
+            .HasDefaultValue(null);
 
         builder.Property(e => e.Osm)
             .HasColumnName("osm")

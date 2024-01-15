@@ -1,14 +1,18 @@
-﻿using Geo.Api.Domain.RailwayStation;
+﻿using Geo.Api.Repositories.RailwayStations.Models;
 
 namespace Geo.Api.Repositories.RailwayStations;
 
-internal interface IRailwayStationsRepository
+public interface IRailwayStationsRepository
 {
-    Task<RailwayStation?> GetAsync(int id, CancellationToken cancellationToken = default);
+    Task<RailwayStationEntity?> GetAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<RailwayStation> CreateAsync(int cityId, int rzdCode, bool isMain, string name, double latitude,
-        double longitude, string timezone, string osm, CancellationToken cancellationToken = default);
+    Task<RailwayStationEntity> CreateAsync(int cityId, RailwayStationCodeEntity code,
+        RailwayStationNameEntity name, RailwayStationGeometryEntity geometry,
+        string osm, bool needToUpdate, int? utcOffset = default, CancellationToken cancellationToken = default);
 
-    Task<RailwayStation> UpdateAsync(int id, int cityId, int rzdCode, bool isMain, string name, double latitude,
-        double longitude, string timezone, string osm, CancellationToken cancellationToken = default);
+    Task<RailwayStationEntity> UpdateAsync(int id, int cityId, RailwayStationCodeEntity code,
+        RailwayStationNameEntity name, RailwayStationGeometryEntity geometry,
+        string osm, bool needToUpdate, int? utcOffset = default, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

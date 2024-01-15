@@ -1,4 +1,6 @@
 ﻿using Geo.Api.Repositories.Cities.Models;
+using Geo.Api.Repositories.Countries.Models;
+using Geo.Api.Repositories.Regions.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,27 +19,30 @@ internal sealed class CityEntityTypeConfiguration : IEntityTypeConfiguration<Cit
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasColumnType("jsonb")
             .IsRequired();
 
-        builder.Property(e => e.Iata)
+        builder.Property(e => e.Code)
             .HasColumnName("iata")
             .HasMaxLength(3)
-            .HasDefaultValue(null)
+            .IsRequired();
+        
+        builder.Property(e => e.Geometry)
+            .HasColumnName("geometry")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        
+        builder.Property(e => e.UtcOffset)
+            .HasColumnName("utc_offset")
             .IsRequired(false);
-        
-        builder.Property(e => e.Latitude)
-            .HasColumnName("latitude")
-            .IsRequired();
 
-        builder.Property(e => e.Longitude)
-            .HasColumnName("longitude")
+        builder.Property(e => e.NeedToUpdate)
+            .HasColumnName("need_to_update")
             .IsRequired();
         
-        builder.Property(e => e.Timezone)
-            .HasColumnName("timezone")
-            .HasMaxLength(6)
-            .IsRequired();
+        builder.Property(e => e.UtcOffset)
+            .HasColumnName("utc_offset")
+            .IsRequired(false);
         
         builder.Property(e => e.Osm)
             .HasColumnName("osm")
@@ -57,24 +62,17 @@ internal sealed class CityEntityTypeConfiguration : IEntityTypeConfiguration<Cit
             .IsRequired();
 
         builder.Property(e => e.RegionId)
-            .IsRequired();
-
-        builder.HasOne(e => e.Country)
-            .WithMany()
-            .HasForeignKey(e => e.CountryId)
-            .IsRequired();
-
-        builder.HasOne(e => e.Region)
-            .WithMany()
-            .HasForeignKey(e => e.RegionId)
             .IsRequired(false);
+
+        builder.HasOne<CountryEntity>()
+            .WithMany()
+            .HasForeignKey(e => e.CountryId);
         
-        builder.HasMany(e => e.Translations)
-            .WithOne()
-            .HasForeignKey(e => new {Type = "city", e.EntityId})
-            .IsRequired(false);
-        
-        builder.HasIndex(e => e.Iata).IsUnique();
+        builder.HasOne<RegionEntity>()
+            .WithMany()
+            .HasForeignKey(e => e.RegionId);
+
+        builder.HasIndex(e => e.Code).IsUnique();
         builder.HasIndex(e => e.Osm).IsUnique();
         builder.HasIndex(e => e.RegionId);
         builder.HasIndex(e => e.CountryId);

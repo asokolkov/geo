@@ -1,22 +1,20 @@
 ﻿using Geo.Api.Repositories.Cities.Models;
-using Geo.Api.Repositories.Translations.Models;
 
 namespace Geo.Api.Repositories.Airports.Models;
 
-internal sealed class AirportEntity
+public sealed class AirportEntity
 {
-    public AirportEntity(int id, int cityId, string name, string iataEn, double latitude, double longitude,
-        int utcOffset, string osm, DateTimeOffset updatedAt)
+    public AirportEntity(int id, int cityId, AirportNameEntity name, AirportCodeEntity code, AirportGeometryEntity geometry,
+        string osm, bool needAutomaticUpdate, DateTimeOffset updatedAt)
     {
         Id = id;
         CityId = cityId;
         Name = name;
-        IataEn = iataEn;
-        Latitude = latitude;
-        Longitude = longitude;
-        UtcOffset = utcOffset;
+        Code = code;
+        Geometry = geometry;
         Osm = osm;
         UpdatedAt = updatedAt;
+        NeedAutomaticUpdate = needAutomaticUpdate;
     }
 
 #pragma warning disable CS8618
@@ -29,27 +27,21 @@ internal sealed class AirportEntity
 
     public int CityId { get; set; }
 
-    public string Name { get; set; }
+    public AirportNameEntity Name { get; set; }
 
-    public string IataEn { get; set; }
+    public AirportCodeEntity Code { get; set; }
 
-    public double Latitude { get; set; }
+    public AirportGeometryEntity Geometry { get; set; }
 
-    public double Longitude { get; set; }
-
-    public int UtcOffset { get; set; }
+    public int? UtcOffset { get; set; }
 
     public string Osm { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
-
-    public string? IataRu { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
     
     public bool NeedAutomaticUpdate { get; set; }
 
     public CityEntity? City { get; init; }
-
-    public List<TranslationEntity> Translations { get; init; } = new();
 }

@@ -20,30 +20,22 @@ internal sealed class AirportEntityTypeConfiguration : IEntityTypeConfiguration<
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasColumnType("jsonb")
             .IsRequired();
         
-        builder.Property(e => e.IataEn)
-            .HasColumnName("iata_en")
-            .HasMaxLength(3)
+        builder.Property(e => e.Code)
+            .HasColumnName("code")
+            .HasColumnType("jsonb")
             .IsRequired();
         
-        builder.Property(e => e.IataRu)
-            .HasColumnName("iata_ru")
-            .HasMaxLength(3)
-            .IsRequired(false);
-        
-        builder.Property(e => e.Latitude)
-            .HasColumnName("latitude")
+        builder.Property(e => e.Geometry)
+            .HasColumnName("geometry")
+            .HasColumnType("jsonb")
             .IsRequired();
-        
-        builder.Property(e => e.Longitude)
-            .HasColumnName("longitude")
-            .IsRequired();
-        
+
         builder.Property(e => e.UtcOffset)
-            .HasColumnName("utcOffset")
-            .IsRequired();
+            .HasColumnName("utc_offset")
+            .IsRequired(false);
         
         builder.Property(e => e.Osm)
             .HasColumnName("osm")
@@ -61,22 +53,15 @@ internal sealed class AirportEntityTypeConfiguration : IEntityTypeConfiguration<
 
         builder.Property(e => e.NeedAutomaticUpdate)
             .HasColumnName("need_automatic_update")
-            .HasDefaultValue(true)
-            .IsRequired(false);
+            .IsRequired();
 
 
         builder.HasOne(e => e.City)
             .WithMany()
             .HasForeignKey(e => e.CityId)
             .IsRequired();
-
-        builder.HasMany(e => e.Translations)
-            .WithOne()
-            .HasForeignKey(e => new { Type = "airport", e.EntityId });
-
+        
         builder.HasIndex(e => e.CityId);
-        builder.HasIndex(e => e.IataEn).IsUnique();
-        builder.HasIndex(e => e.IataRu).IsUnique();
         builder.HasIndex(e => e.Osm).IsUnique();
     }
 }

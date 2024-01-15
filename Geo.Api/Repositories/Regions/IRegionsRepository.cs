@@ -1,14 +1,18 @@
-﻿namespace Geo.Api.Repositories.Regions;
+﻿using Geo.Api.Repositories.Regions.Models;
 
-using Domain.Regions;
+namespace Geo.Api.Repositories.Regions;
 
-internal interface IRegionsRepository
+public interface IRegionsRepository
 {
-    Task<Region?> GetAsync(int id, CancellationToken cancellationToken = default);
+    Task<RegionEntity?> GetAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<Region> CreateAsync(int countryId, string name, string osm,
+    Task<RegionEntity> CreateAsync(int countryId, RegionNameEntity name, string osm,
+        bool needToUpdate, RegionGeometryEntity? geometry = default, int? utcOffset = default,
         CancellationToken cancellationToken = default);
 
-    Task<Region> UpdateAsync(int id, int countryId, string name, string osm,
+    Task<RegionEntity> UpdateAsync(int id, int countryId, RegionNameEntity name, string osm,
+        bool needToUpdate, RegionGeometryEntity? geometry = default, int? utcOffset = default,
         CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

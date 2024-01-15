@@ -17,7 +17,12 @@ internal sealed class CountryEntityTypeConfiguration : IEntityTypeConfiguration<
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasColumnType("jsonb")
+            .IsRequired();
+
+        builder.Property(e => e.Geometry)
+            .HasColumnName("geometry")
+            .HasColumnType("jsonb")
             .IsRequired();
 
         builder.Property(e => e.Iso3116Alpha2Code)
@@ -54,5 +59,6 @@ internal sealed class CountryEntityTypeConfiguration : IEntityTypeConfiguration<
         
         builder.HasIndex(e => e.Iso3116Alpha2Code).IsUnique();
         builder.HasIndex(e => e.Iso3166Alpha3Code).IsUnique();
+        builder.HasIndex(e => e.Osm);
     }
 }

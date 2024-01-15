@@ -6,10 +6,8 @@ using Geo.Api.Repositories.Countries.TypeConfigurations;
 using Geo.Api.Repositories.RailwayStations.Models;
 using Geo.Api.Repositories.RailwayStations.TypeConfigurations;
 using Geo.Api.Repositories.Regions.TypeConfigurations;
-using Geo.Api.Repositories.TranslationLanguages.Models;
-using Geo.Api.Repositories.TranslationLanguages.TypeConfigurations;
-using Geo.Api.Repositories.Translations.Models;
-using Geo.Api.Repositories.Translations.TypeConfigurations;
+using Geo.Api.Repositories.SubwayStations.Models;
+using Geo.Api.Repositories.SubwayStations.TypeConfiguration;
 
 namespace Geo.Api.Repositories;
 
@@ -33,10 +31,8 @@ internal sealed class ApplicationContext : DbContext
     
     public DbSet<RailwayStationEntity> RailwayStations { get; private set; } = null!;
 
-    public DbSet<TranslationLanguageEntity> TranslationLanguages { get; private set; } = null!;
-    
-    public DbSet<AirportTranslationEntity> AirportTranslations { get; private set; } = null!;
-    
+    public DbSet<SubwayStationEntity> SubwayStations { get; private set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new AirportEntityTypeConfiguration());
@@ -44,8 +40,6 @@ internal sealed class ApplicationContext : DbContext
         modelBuilder.ApplyConfiguration(new CountryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RailwayStationEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new TranslationLanguageEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new AirportTranslationEntityTypeConfiguration());
-
+        modelBuilder.ApplyConfiguration(new SubwayStationEntityTypeConfiguration());
     }
 }

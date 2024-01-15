@@ -1,6 +1,4 @@
 ﻿using Geo.Api.Repositories.Exceptions;
-using AutoMapper;
-using Geo.Api.Domain.Regions;
 using Geo.Api.Repositories.Regions.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -11,59 +9,81 @@ internal sealed class RegionsRepository : IRegionsRepository
 {
     private readonly ILogger logger;
     private readonly ApplicationContext context;
-    private readonly IMapper mapper;
     private readonly ISystemClock systemClock;
 
-    public RegionsRepository(ILogger<RegionsRepository> logger, ApplicationContext context, IMapper mapper,
+    public RegionsRepository(ILogger<RegionsRepository> logger, ApplicationContext context,
         ISystemClock systemClock)
     {
         this.logger = logger;
         this.context = context;
-        this.mapper = mapper;
         this.systemClock = systemClock;
     }
 
-    public async Task<Region?> GetAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<RegionEntity?> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         var regionEntity = await context.Regions
             .AsQueryable()
             .AsNoTracking()
-            .Include(e => e.Country)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-        return mapper.Map<Region>(regionEntity);
+        return regionEntity;
     }
 
-    public async Task<Region> CreateAsync(int countryId, string name, string osm,
+    public async Task<RegionEntity> CreateAsync(int countryId, RegionNameEntity name, string osm,
+        bool needToUpdate, RegionGeometryEntity? geometry = default, int? utcOffset = default,
         CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
-        var newRegion = new RegionEntity(0, countryId, name, osm, now);
+        var newRegion = new RegionEntity(0, countryId, name, osm, needToUpdate, now)
+        {
+            Geometry = geometry ?? new RegionGeometryEntity(),
+            UtcOffset = utcOffset
+        };
         var entry = await context.AddAsync(newRegion, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<Region>(entry.Entity);
+        await entry.ReloadAsync(cancellationToken);
+        return entry.Entity;
     }
 
-    public async Task<Region> UpdateAsync(int id, int countryId, string name, string osm,
+    public async Task<RegionEntity> UpdateAsync(int id, int countryId, RegionNameEntity name, string osm,
+        bool needToUpdate, RegionGeometryEntity? geometry = default, int? utcOffset = default,
         CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
         var regionEntity = await context.Regions
-            .Include(e => e.Country)
-            .FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(region => region.Id == id, cancellationToken);
 
         if (regionEntity is null)
         {
             logger.LogWarning("Region with id '{Id}' not found", id);
-            throw new EntityNotFoundException(typeof(Region), id);
+            throw new EntityNotFoundException(typeof(RegionEntity), id);
         }
 
         regionEntity.Name = name;
         regionEntity.CountryId = countryId;
         regionEntity.Osm = osm;
         regionEntity.UpdatedAt = now;
+        regionEntity.NeedToUpdate = needToUpdate;
+        regionEntity.Geometry = geometry ?? new RegionGeometryEntity();
+        regionEntity.UtcOffset = utcOffset;
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<Region>(regionEntity);
+        return regionEntity;
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var now = systemClock.UtcNow;
+        var regionEntity = await context.Regions.FirstOrDefaultAsync(region => region.Id == id, cancellationToken);
+        if (regionEntity is null)
+        {
+            logger.LogWarning("Region with id '{Id}' not found", id);
+            throw new EntityNotFoundException(typeof(RegionEntity), id);
+        }
+
+        regionEntity.UpdatedAt = now;
+        regionEntity.DeletedAt = now;
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

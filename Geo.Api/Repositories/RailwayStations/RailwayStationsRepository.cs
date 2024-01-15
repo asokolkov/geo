@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Geo.Api.Domain.RailwayStation;
-using Geo.Api.Repositories.Exceptions;
+﻿using Geo.Api.Repositories.Exceptions;
 using Geo.Api.Repositories.RailwayStations.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Internal;
@@ -12,60 +10,81 @@ internal sealed class RailwayStationsRepository : IRailwayStationsRepository
     private readonly ILogger logger;
     private readonly ApplicationContext context;
     private readonly ISystemClock systemClock;
-    private readonly IMapper mapper;
 
-    public RailwayStationsRepository(ILogger<RailwayStationsRepository> logger, ApplicationContext context, ISystemClock systemClock, IMapper mapper)
+    public RailwayStationsRepository(ILogger<RailwayStationsRepository> logger, ApplicationContext context,
+        ISystemClock systemClock)
     {
         this.logger = logger;
         this.context = context;
         this.systemClock = systemClock;
-        this.mapper = mapper;
     }
 
-    public async Task<RailwayStation?> GetAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<RailwayStationEntity?> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         var entity = await context.RailwayStations
             .AsQueryable()
             .AsNoTracking()
             .Include(e => e.City)
-            .FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
-        return mapper.Map<RailwayStation>(entity);
+            .FirstOrDefaultAsync(country => country.Id == id || country.Code.Express3 == id, cancellationToken);
+        return entity;
     }
 
-    public async Task<RailwayStation> CreateAsync(int cityId, int rzdCode, bool isMain, string name, double latitude, double longitude, string timezone,
-        string osm, CancellationToken cancellationToken = default)
+    public async Task<RailwayStationEntity> CreateAsync(int cityId, RailwayStationCodeEntity code,
+        RailwayStationNameEntity name, RailwayStationGeometryEntity geometry,
+        string osm, bool needToUpdate, int? utcOffset = default, CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
         var countryEntity =
-            new RailwayStationEntity(0, cityId, rzdCode, isMain, name, latitude, longitude, timezone, osm, now);
+            new RailwayStationEntity(0, cityId, code, name, geometry, osm, needToUpdate, now) { UtcOffset = utcOffset };
         var entry = await context.AddAsync(countryEntity, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<RailwayStation>(entry.Entity);
+        await entry.Reference(e => e.City).LoadAsync(cancellationToken);
+        return entry.Entity;
     }
 
-    public async Task<RailwayStation> UpdateAsync(int id, int cityId, int rzdCode, bool isMain, string name, double latitude, double longitude,
-        string timezone, string osm, CancellationToken cancellationToken = default)
+    public async Task<RailwayStationEntity> UpdateAsync(int id, int cityId, RailwayStationCodeEntity code,
+        RailwayStationNameEntity name, RailwayStationGeometryEntity geometry,
+        string osm, bool needToUpdate, int? utcOffset = default, CancellationToken cancellationToken = default)
     {
         var now = systemClock.UtcNow;
-        var entity = await context.RailwayStations.FirstOrDefaultAsync(country => country.Id == id, cancellationToken);
+        var entity = await context.RailwayStations.FirstOrDefaultAsync(
+            railwayStationEntity => railwayStationEntity.Id == id || railwayStationEntity.Code.Express3 == id,
+            cancellationToken);
 
         if (entity is null)
         {
             logger.LogWarning("RailwayStation with id '{Id}' not found", id);
-            throw new EntityNotFoundException(typeof(RailwayStation), id);
+            throw new EntityNotFoundException(typeof(RailwayStationEntity), id);
         }
 
         entity.CityId = cityId;
-        entity.RzdCode = rzdCode;
-        entity.IsMain = isMain;
+        entity.Code = code;
         entity.Name = name;
-        entity.Latitude = latitude;
-        entity.Longitude = longitude;
-        entity.Timezone = timezone;
+        entity.Geometry = geometry;
+        entity.UtcOffset = utcOffset;
         entity.Osm = osm;
         entity.UpdatedAt = now;
+        entity.NeedToUpdate = needToUpdate;
 
         await context.SaveChangesAsync(cancellationToken);
-        return mapper.Map<RailwayStation>(entity);
+        await context.Entry(entity).Reference(e => e.City).LoadAsync(cancellationToken);
+        return entity;
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var now = systemClock.UtcNow;
+        var countryEntity =
+            await context.RailwayStations.FirstOrDefaultAsync(e => e.Id == id || e.Code.Express3 == id,
+                cancellationToken);
+        if (countryEntity is null)
+        {
+            logger.LogWarning("RailwayStation with id '{Id}' not found", id);
+            throw new EntityNotFoundException(typeof(RailwayStationEntity), id);
+        }
+
+        countryEntity.DeletedAt = now;
+        countryEntity.UpdatedAt = now;
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

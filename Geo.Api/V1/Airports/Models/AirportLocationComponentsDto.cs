@@ -2,11 +2,13 @@
 
 namespace Geo.Api.V1.Airports.Models;
 
-internal sealed record AirportLocationComponentsDto(
-    [property: JsonPropertyName("city_id ")]
+public sealed record AirportLocationComponentsDto(
+    [property: JsonPropertyName("city_id")]
     int CityId,
-    [property: JsonPropertyName("region_id")]
-    int RegionId,
     [property: JsonPropertyName("country_id")]
-    int CountryId 
-);
+    int CountryId
+)
+{
+    [JsonPropertyName("region_id")]
+    public int? RegionId { get; init; }
+}

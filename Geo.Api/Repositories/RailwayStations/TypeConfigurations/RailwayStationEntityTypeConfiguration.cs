@@ -15,12 +15,9 @@ internal sealed class RailwayStationEntityTypeConfiguration : IEntityTypeConfigu
             .HasColumnName("id")
             .ValueGeneratedOnAdd();
 
-        builder.Property(e => e.RzdCode)
-            .HasColumnName("rzd_code")
-            .IsRequired();
-
-        builder.Property(e => e.IsMain)
-            .HasColumnName("is_main")
+        builder.Property(e => e.Code)
+            .HasColumnName("code")
+            .HasColumnType("jsonb")
             .IsRequired();
 
         builder.Property(e => e.CityId)
@@ -34,21 +31,17 @@ internal sealed class RailwayStationEntityTypeConfiguration : IEntityTypeConfigu
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasColumnType("jsonb")
             .IsRequired();
 
-        builder.Property(e => e.Latitude)
-            .HasColumnName("latitude")
+        builder.Property(e => e.Geometry)
+            .HasColumnName("geometry")
+            .HasColumnType("jsonb")
             .IsRequired();
 
-        builder.Property(e => e.Longitude)
-            .HasColumnName("longitude")
-            .IsRequired();
-
-        builder.Property(e => e.Timezone)
-            .HasColumnName("timezone")
-            .HasMaxLength(6)
-            .IsRequired();
+        builder.Property(e => e.UtcOffset)
+            .HasColumnName("utc_offset")
+            .IsRequired(false);
 
         builder.Property(e => e.Osm)
             .HasColumnName("osm")
@@ -64,7 +57,15 @@ internal sealed class RailwayStationEntityTypeConfiguration : IEntityTypeConfigu
             .HasDefaultValue(null)
             .IsRequired(false);
 
-        builder.HasIndex(e => e.RzdCode).IsUnique();
+        builder.Property(e => e.NeedToUpdate)
+            .HasColumnName("need_to_update")
+            .IsRequired();
+
+        builder.HasOne(e => e.City)
+            .WithMany()
+            .HasForeignKey(e => e.CityId)
+            .IsRequired();
+        
         builder.HasIndex(e => e.CityId);
         builder.HasIndex(e => e.Osm).IsUnique();
     }
