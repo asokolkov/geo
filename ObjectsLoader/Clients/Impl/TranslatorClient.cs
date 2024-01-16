@@ -6,7 +6,6 @@ namespace ObjectsLoader.Clients.Impl;
 
 public class TranslatorClient : ITranslatorClient
 {
-    private const string Url = "https://localhost:7001/translate?text={0}&target={1}&source={2}";
     private readonly ILogger<TranslatorClient> logger;
     private readonly IDistributedCache cache;
     private readonly HttpClient client = new();
@@ -15,7 +14,7 @@ public class TranslatorClient : ITranslatorClient
     {
         this.logger = logger;
         this.cache = cache;
-        this.logger.LogInformation("TranslatorClient initialized with url: '{Url}'", Url);
+        this.logger.LogInformation("TranslatorClient initialized");
     }
 
     public async Task<string?> Fetch(string text, string target, string? source = null)
@@ -32,7 +31,9 @@ public class TranslatorClient : ITranslatorClient
         }
         
         logger.LogInformation("Translation not found in cache, sending request");
-        var query = string.Format(Url, text, target, source);
+        var query = source is null 
+            ? $"https://localhost:7001/translate?text={text}&target={target}"
+            : $"https://localhost:7001/translate?text={text}&target={target}&source={source}";
 
         HttpResponseMessage? response;
         try

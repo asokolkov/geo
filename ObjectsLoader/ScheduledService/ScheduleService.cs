@@ -1,4 +1,5 @@
-﻿using ObjectsLoader.Clients;
+﻿using Microsoft.Extensions.Logging;
+using ObjectsLoader.Clients;
 using ObjectsLoader.Extractors;
 using ObjectsLoader.JsonModels;
 using ObjectsLoader.Models;
@@ -7,6 +8,7 @@ namespace ObjectsLoader.ScheduledService;
 
 public class ScheduleService : CronJobService
 {
+    private readonly ILogger<ScheduleService> logger;
     private readonly IExtractor<Airport> airportsExtractor;
     private readonly IExtractor<Metro> metrosExtractor;
     private readonly IExtractor<Railway> railwaysExtractor;
@@ -15,8 +17,9 @@ public class ScheduleService : CronJobService
     private readonly IExtractor<Country> countriesExtractor;
     private readonly ISenderClient client;
     
-    public ScheduleService(IExtractor<Metro> metrosExtractor, IExtractor<Railway> railwaysExtractor, IExtractor<Airport> airportsExtractor, IExtractor<City> citiesExtractor, IExtractor<Region> regionsExtractor, IExtractor<Country> countriesExtractor, ISenderClient client, IScheduleConfig<ScheduleService> config) : base(config.CronExpression, config.TimeZoneInfo)
+    public ScheduleService(ILogger<ScheduleService> logger, IExtractor<Metro> metrosExtractor, IExtractor<Railway> railwaysExtractor, IExtractor<Airport> airportsExtractor, IExtractor<City> citiesExtractor, IExtractor<Region> regionsExtractor, IExtractor<Country> countriesExtractor, ISenderClient client, IScheduleConfig<ScheduleService> config) : base(config.CronExpression, config.TimeZoneInfo)
     {
+        this.logger = logger;
         this.metrosExtractor = metrosExtractor;
         this.railwaysExtractor = railwaysExtractor;
         this.airportsExtractor = airportsExtractor;
@@ -32,9 +35,13 @@ public class ScheduleService : CronJobService
         var countriesResponses = new List<CountryJson>();
         foreach (var country in countries)
         {
+            if (country.Iso3116Alpha2 is "AD" or "SK" or "AT" or "HU" or "GE")
+            {
+                continue;
+            }
             var countryJson = new CountryJson
             {
-                Id = Guid.NewGuid(),
+                Id = "1",
                 Code = new CountryCodeJson
                 {
                     Iso2 = country.Iso3116Alpha2,
@@ -63,6 +70,7 @@ public class ScheduleService : CronJobService
             if (response is not null)
             {
                 countriesResponses.Add(response);
+                logger.LogInformation("COUNTRY_ID: {CountryId}, COUNTRY_OSM: {Osm}, COUNTRY_CODE: {Code}", response.Id, response.Osm, response.Code.Iso2);
             }
         }
         
@@ -70,7 +78,11 @@ public class ScheduleService : CronJobService
         var regionsResponses = new List<RegionJson>();
         foreach (var region in regions)
         {
-            var country = countriesResponses.Where(x => x.Code.Iso2 == region.CountryIso2Code).Select(x => x).FirstOrDefault();
+            
+            var country = countriesResponses
+                .Where(x => x.Code.Iso2 == region.CountryIso2Code)
+                .Select(x => x)
+                .FirstOrDefault();
             if (country is null)
             {
                 continue;
@@ -100,6 +112,7 @@ public class ScheduleService : CronJobService
             if (response is not null)
             {
                 regionsResponses.Add(response);
+                logger.LogInformation("REGION_ID: {Id}, REGION_OSM: {Osm}, REGION_CODE: {Code}", response.Id, response.Osm, region.Iso);
             }
         }
         
@@ -122,7 +135,7 @@ public class ScheduleService : CronJobService
             {
                 Code = new CodeJson
                 {
-                    En = ""
+                    En = city.RegionIsoCode
                 },
                 Name = new NameJson
                 {
@@ -150,119 +163,119 @@ public class ScheduleService : CronJobService
             }
         }
         
-        var airports = await airportsExtractor.Extract();
-        foreach (var airport in airports)
-        {
-            var city = citiesResponses.FirstOrDefault(x => x.Osm == airport.CityOsmId);
-            if (city is null)
-            {
-                continue;
-            }
-            
-            var airportJson = new AirportJson
-            {
-                Code = new CodeJson
-                {
-                    En = airport.IataEn,
-                },
-                Name = new NameJson
-                {
-                    Ru = airport.NameRu,
-                    En = airport.NameEn
-                },
-                LocationComponents = new LocationComponentsJson
-                {
-                    CityId = city.Id,
-                    RegionId = city.LocationComponentsJson.RegionId,
-                    CountryId = city.LocationComponentsJson.CountryId
-                },
-                Geometry = new GeometryJson
-                {
-                    Latitude = airport.Latitude,
-                    Longitude = airport.Longitude
-                },
-                Osm = airport.Osm,
-                NeedToUpdate = false,
-                LastUpdate = DateTimeOffset.Now
-            };
-            await client.Send("/airport", airportJson);
-        }
-        
-        var railways = await railwaysExtractor.Extract();
-        foreach (var railway in railways)
-        {
-            var city = citiesResponses.FirstOrDefault(x => x.Osm == railway.CityOsmId);
-            if (city is null)
-            {
-                continue;
-            }
-            
-            var railwayJson = new RailwayJson
-            {
-                Code = new RailwayCodeJson
-                {
-                    Express3 = railway.Express3Code,
-                },
-                Name = new NameJson
-                {
-                    Ru = railway.NameRu,
-                    En = railway.NameEn
-                },
-                LocationComponents = new LocationComponentsJson
-                {
-                    CityId = city.Id,
-                    RegionId = city.LocationComponentsJson.RegionId,
-                    CountryId = city.LocationComponentsJson.CountryId
-                },
-                Geometry = new GeometryJson
-                {
-                    Latitude = railway.Latitude,
-                    Longitude = railway.Longitude
-                },
-                Osm = railway.Osm,
-                NeedToUpdate = false,
-                LastUpdate = DateTimeOffset.Now
-            };
-            await client.Send("/rail_station", railwayJson);
-        }
-        
-        var metros = await metrosExtractor.Extract();
-        foreach (var metro in metros)
-        {
-            var city = citiesResponses.FirstOrDefault(x => x.Osm == metro.CityOsmId);
-            if (city is null)
-            {
-                continue;
-            }
-            
-            var metroJson = new MetroJson
-            {
-                StationName = new NameJson
-                {
-                    Ru = metro.StationNameRu,
-                    En = metro.StationNameEn
-                },
-                LineName = new NameJson
-                {
-                    Ru = metro.LineNameRu,
-                    En = metro.LineNameEn
-                },
-                LocationComponents = new LocationComponentsJson
-                {
-                    CityId = city.Id,
-                    RegionId = city.LocationComponentsJson.RegionId,
-                    CountryId = city.LocationComponentsJson.CountryId
-                },
-                Geometry = new GeometryJson
-                {
-                    Latitude = metro.Latitude,
-                    Longitude = metro.Longitude
-                },
-                Osm = metro.Osm,
-                NeedToUpdate = false,
-                LastUpdate = DateTimeOffset.Now
-            };
-            await client.Send("/metro", metroJson);
-        }
+        // var airports = await airportsExtractor.Extract();
+        // foreach (var airport in airports)
+        // {
+        //     var city = citiesResponses.FirstOrDefault(x => x.Osm == airport.CityOsmId);
+        //     if (city is null)
+        //     {
+        //         continue;
+        //     }
+        //     
+        //     var airportJson = new AirportJson
+        //     {
+        //         Code = new CodeJson
+        //         {
+        //             En = airport.IataEn,
+        //         },
+        //         Name = new NameJson
+        //         {
+        //             Ru = airport.NameRu,
+        //             En = airport.NameEn
+        //         },
+        //         LocationComponents = new LocationComponentsJson
+        //         {
+        //             CityId = city.Id,
+        //             RegionId = city.LocationComponentsJson.RegionId,
+        //             CountryId = city.LocationComponentsJson.CountryId
+        //         },
+        //         Geometry = new GeometryJson
+        //         {
+        //             Latitude = airport.Latitude,
+        //             Longitude = airport.Longitude
+        //         },
+        //         Osm = airport.Osm,
+        //         NeedToUpdate = false,
+        //         LastUpdate = DateTimeOffset.Now
+        //     };
+        //     await client.Send("/airport", airportJson);
+        // }
+        //
+        // var railways = await railwaysExtractor.Extract();
+        // foreach (var railway in railways)
+        // {
+        //     var city = citiesResponses.FirstOrDefault(x => x.Osm == railway.CityOsmId);
+        //     if (city is null)
+        //     {
+        //         continue;
+        //     }
+        //     
+        //     var railwayJson = new RailwayJson
+        //     {
+        //         Code = new RailwayCodeJson
+        //         {
+        //             Express3 = railway.Express3Code,
+        //         },
+        //         Name = new NameJson
+        //         {
+        //             Ru = railway.NameRu,
+        //             En = railway.NameEn
+        //         },
+        //         LocationComponents = new LocationComponentsJson
+        //         {
+        //             CityId = city.Id,
+        //             RegionId = city.LocationComponentsJson.RegionId,
+        //             CountryId = city.LocationComponentsJson.CountryId
+        //         },
+        //         Geometry = new GeometryJson
+        //         {
+        //             Latitude = railway.Latitude,
+        //             Longitude = railway.Longitude
+        //         },
+        //         Osm = railway.Osm,
+        //         NeedToUpdate = false,
+        //         LastUpdate = DateTimeOffset.Now
+        //     };
+        //     await client.Send("/rail_station", railwayJson);
+        // }
+        //
+        // var metros = await metrosExtractor.Extract();
+        // foreach (var metro in metros)
+        // {
+        //     var city = citiesResponses.FirstOrDefault(x => x.Osm == metro.CityOsmId);
+        //     if (city is null)
+        //     {
+        //         continue;
+        //     }
+        //     
+        //     var metroJson = new MetroJson
+        //     {
+        //         StationName = new NameJson
+        //         {
+        //             Ru = metro.StationNameRu,
+        //             En = metro.StationNameEn
+        //         },
+        //         LineName = new NameJson
+        //         {
+        //             Ru = metro.LineNameRu,
+        //             En = metro.LineNameEn
+        //         },
+        //         LocationComponents = new LocationComponentsJson
+        //         {
+        //             CityId = city.Id,
+        //             RegionId = city.LocationComponentsJson.RegionId,
+        //             CountryId = city.LocationComponentsJson.CountryId
+        //         },
+        //         Geometry = new GeometryJson
+        //         {
+        //             Latitude = metro.Latitude,
+        //             Longitude = metro.Longitude
+        //         },
+        //         Osm = metro.Osm,
+        //         NeedToUpdate = false,
+        //         LastUpdate = DateTimeOffset.Now
+        //     };
+        //     await client.Send("/metro", metroJson);
+        // }
     }
 }

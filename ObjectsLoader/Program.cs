@@ -46,10 +46,10 @@ builder.Services.AddLogging(config => {
 
 builder.Services.AddSingleton<INominatimClient, NominatimClient>();
 builder.Services.AddSingleton<IOsmClient, OsmClient>();
-builder.Services.AddSingleton<ITranslatorClient, FakeTranslatorClient>();
+builder.Services.AddSingleton<ITranslatorClient, TranslatorClient>();
 builder.Services.AddSingleton<ITimezoneManager, TimezoneManager>();
 builder.Services.AddSingleton<IDistributedCache, DistributedCache>();
-builder.Services.AddSingleton<ISenderClient, FakeSenderClient>();
+builder.Services.AddSingleton<ISenderClient, SenderClient>();
 
 builder.Services.AddSingleton<IExtractor<Country>, CountriesExtractor>();
 builder.Services.AddSingleton<IExtractor<Region>, RegionsExtractor>();
@@ -62,5 +62,7 @@ builder.Services.AddSingleton<ScheduleService>();
 builder.Services.AddCronJob<ScheduleService>(config => { config.TimeZoneInfo = TimeZoneInfo.Local; config.CronExpression = CronExpression.EveryMinute; });
 
 var app = builder.Build();
+
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
 app.Run();

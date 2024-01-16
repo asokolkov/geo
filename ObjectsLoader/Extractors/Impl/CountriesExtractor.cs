@@ -10,7 +10,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class CountriesExtractor : IExtractor<Country>
 {
-    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags 100;";
+    private const string Query = "[out:json];rel[admin_level=2][boundary=administrative][name][\"ISO3166-1:alpha2\"][\"ISO3166-1:alpha3\"];out ids tags;";
     
     private readonly ILogger<CountriesExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -44,6 +44,7 @@ public class CountriesExtractor : IExtractor<Country>
             var iso3 = element.Tags["ISO3166-1:alpha3"];
             var name = element.Tags["name"];
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+            element.Tags.TryGetValue("name:en", out var jsonNameEn);
             
             var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
             if (nameRu is null)
@@ -56,7 +57,7 @@ public class CountriesExtractor : IExtractor<Country>
                 Osm = osmId,
                 Iso3116Alpha2 = iso2,
                 Iso3116Alpha3 = iso3,
-                NameEn = name,
+                NameEn = jsonNameEn ?? name,
                 NameRu = nameRu,
                 PhoneCode = CountriesPhones.Codes[iso2],
                 PhoneMask = CountriesPhones.Masks[iso2]

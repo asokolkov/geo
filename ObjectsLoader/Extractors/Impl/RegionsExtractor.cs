@@ -9,7 +9,7 @@ namespace ObjectsLoader.Extractors.Impl;
 
 public class RegionsExtractor : IExtractor<Region>
 {
-    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags 100;";
+    private const string Query = "[out:json];rel[admin_level=4][boundary=administrative][name][\"ISO3166-2\"];out ids tags;";
     
     private readonly ILogger<RegionsExtractor> logger;
     private readonly IOsmClient osmClient;
@@ -45,6 +45,7 @@ public class RegionsExtractor : IExtractor<Region>
             var name = element.Tags["name"];
             element.Tags.TryGetValue("ISO3166-2", out var isoCode); 
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+            element.Tags.TryGetValue("name:en", out var jsonNameEn);
 
             if (isoCode is null)
             {
@@ -60,7 +61,7 @@ public class RegionsExtractor : IExtractor<Region>
             var region = new Region
             {
                 Osm = osmId,
-                NameEn = name,
+                NameEn = jsonNameEn ?? name,
                 NameRu = nameRu,
                 CountryIso2Code = isoCode.Split("-").First(),
                 Iso = isoCode

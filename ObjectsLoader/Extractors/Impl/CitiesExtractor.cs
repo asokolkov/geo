@@ -51,6 +51,7 @@ public class CitiesExtractor : IExtractor<City>
             var regionIso = element.Tags["is_in:iso_3166_2"];
             element.Tags.TryGetValue("timezone", out var jsonTimezone);
             element.Tags.TryGetValue("name:ru", out var jsonNameRu);
+            element.Tags.TryGetValue("name:en", out var jsonNameEn);
             
             var nameRu = jsonNameRu ?? await translatorClient.Fetch(name, "ru");
             if (nameRu is null)
@@ -68,7 +69,7 @@ public class CitiesExtractor : IExtractor<City>
                 Longitude = longitude,
                 Osm = osmId,
                 NameRu = nameRu,
-                NameEn = name,
+                NameEn = jsonNameEn ?? name,
                 UtcOffset = utcOffset,
                 RegionIsoCode = regionIso
             };

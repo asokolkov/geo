@@ -2,5 +2,5 @@
 
 public static class CronExpression
 {
-    public const string EveryMinute = "46 2 * * *";
+    public const string EveryMinute = "52 13 * * *";
 }
